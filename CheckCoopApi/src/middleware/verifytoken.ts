@@ -1,22 +1,25 @@
-const jwt = require('jsonwebtoken');
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'UseroNoTieneNiIdeaDeAngular';
 
-function verifyToken(req, res, next) {
+function verifyToken(req: Request, res: Response, next: NextFunction): void {
   const authHeader = req.headers['authorization'];
-  if (!authHeader) 
+  if (!authHeader) {
     return res.status(401).json({ message: 'No se recibió token' });
-
-  const [scheme, token] = authHeader.split(' ');
+  }
+  
   if (scheme !== 'Bearer' || !token) {
     return res.status(401).json({ message: 'Formato de token inválido' });
   }
-
+  
   jwt.verify(token, JWT_SECRET, (err, payload) => {
-    if (err) 
+    if (err) {
       return res.status(403).json({ message: 'Token no válido o expirado' });
-    req.user = payload; // { sub: username, iat, exp }
+    }
+    req.user = payload; // Aquí se añade la propiedad user
     next();
   });
 }
 
-module.exports = verifyToken;
+export default verifyToken;
