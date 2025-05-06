@@ -11,6 +11,8 @@ import authRouter from './routes/auth';
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
+app.use('/auth', authRouter);
+
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -41,7 +43,6 @@ app.listen(PORT, () => {
 
 
 //Endpoints
-app.use('/auth', authRouter);
 
 
 
