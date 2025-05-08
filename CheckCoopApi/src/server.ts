@@ -11,8 +11,6 @@ import authRouter from './routes/auth';
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-app.use('/auth', authRouter);
-
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -21,7 +19,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Health check endpoint
+// Endpoints
+app.use('/auth', authRouter);
+
+// Health check
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API is running' });
 });
@@ -38,12 +39,5 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(`✅ Server listening on port ${PORT}`);
 });
-
-
-//Endpoints
-
-
-
-

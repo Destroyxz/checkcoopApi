@@ -17,6 +17,7 @@ interface UserRow {
   email: string;
   password_hash: string;
   rol: string;
+  activo: number;
 }
 
 const router = Router();
@@ -30,6 +31,7 @@ router.post(
     next: NextFunction
   ): Promise<void> => {
     const { email, password } = req.body;
+
     if (!email || !password) {
       res.status(400).json({ message: 'Email y contraseña son obligatorios' });
       return;
@@ -38,15 +40,23 @@ router.post(
     try {
       // Recuperar usuario por email
       const [rows] = await db.execute(
-        'SELECT id, nombre, apellidos, email, password_hash, rol FROM usuarios WHERE email = ?',
+        'SELECT id, nombre, apellidos, email, password_hash, rol, activo FROM usuarios WHERE email = ?',
         [email]
       );
       const users = rows as UserRow[];
+
       if (users.length === 0) {
         res.status(401).json({ message: 'Credenciales inválidas' });
         return;
       }
+
       const user = users[0];
+
+      // Verificar si el usuario está activo
+      if (user.activo !== 1) {
+        res.status(403).json({ message: 'Usuario inactivo' });
+        return;
+      }
 
       // Verificar contraseña
       const match = await bcrypt.compare(password, user.password_hash);
@@ -77,6 +87,8 @@ router.post(
     }
   }
 );
+
+// POST /auth/register: crea un nuevo usuario
 router.post(
   '/register',
   async (
@@ -105,12 +117,12 @@ router.post(
       // Hashear la contraseña
       const password_hash = await bcrypt.hash(password, 10);
 
-      // Insertar nuevo usuario
+      // Insertar nuevo usuario (activo por defecto en 1)
       await db.execute(
-        'INSERT INTO usuarios (nombre, apellidos, email, password_hash, rol) VALUES (?, ?, ?, ?, ?)',
-        [username, surname, email, password_hash, 'usuario'] // puedes cambiar el rol por defecto
+        'INSERT INTO usuarios (empresa_id, nombre, apellidos, email, password_hash, rol, activo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [1, username, surname, email, password_hash, 'usuario', 1]
       );
-
+      
       res.status(201).json({ message: 'Usuario registrado correctamente' });
     } catch (err) {
       next(err);
