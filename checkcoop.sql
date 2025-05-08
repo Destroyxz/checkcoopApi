@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.1.1deb5ubuntu1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 01-05-2025 a las 12:29:11
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.0.30
+-- Servidor: localhost:3306
+-- Tiempo de generación: 08-05-2025 a las 20:17:08
+-- Versión del servidor: 8.0.41-0ubuntu0.22.04.1
+-- Versión de PHP: 8.1.2-1ubuntu2.20
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -28,15 +28,15 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `empresas` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `nombre` varchar(255) NOT NULL,
-  `razon_social` varchar(255) DEFAULT NULL,
-  `nif_cif` varchar(20) DEFAULT NULL,
-  `direccion` text DEFAULT NULL,
-  `email_contacto` varchar(255) DEFAULT NULL,
-  `telefono` varchar(50) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` bigint UNSIGNED NOT NULL,
+  `nombre` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `razon_social` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nif_cif` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `direccion` text COLLATE utf8mb4_general_ci,
+  `email_contacto` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefono` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -53,17 +53,17 @@ INSERT INTO `empresas` (`id`, `nombre`, `razon_social`, `nif_cif`, `direccion`, 
 --
 
 CREATE TABLE `usuarios` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `empresa_id` bigint(20) UNSIGNED NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `apellidos` varchar(100) DEFAULT NULL,
-  `email` varchar(255) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `rol` enum('superadmin','admin','usuario') NOT NULL,
-  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `id` bigint UNSIGNED NOT NULL,
+  `empresa_id` bigint UNSIGNED NOT NULL,
+  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `apellidos` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `rol` enum('superadmin','admin','usuario') COLLATE utf8mb4_general_ci NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
   `last_login` datetime DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -72,7 +72,7 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `empresa_id`, `nombre`, `apellidos`, `email`, `password_hash`, `rol`, `activo`, `last_login`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Gabriel', 'Callejón Sánchez', 'gabriel@checkcoop.com', '$2b$12$KIXu1nYWM5k9VhFZFDxG5eH1mAqz2J1n9WUsqGgBu.yGh7OzT8G0m', 'superadmin', 0, NULL, '2025-05-01 11:25:43', '2025-05-01 11:26:13'),
-(2, 1, 'Francisco Javier', 'Usero Sánchez', 'fran@checkcoop.com', '$2b$12$6l.bFDgcm8bmKa8lJFc71e.M5LDrFNHrsBYXcYho49539NlgLeMNu', 'superadmin', 0, NULL, '2025-05-01 11:25:43', '2025-05-01 11:26:17');
+(6, 1, 'Francisco', 'Usero', 'fran@checkcoop.com', '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-08 19:57:00');
 
 --
 -- Índices para tablas volcadas
@@ -104,13 +104,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `empresas`
 --
 ALTER TABLE `empresas`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Restricciones para tablas volcadas
