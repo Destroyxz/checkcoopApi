@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 08-05-2025 a las 20:17:08
+-- Tiempo de generación: 09-05-2025 a las 18:37:05
 -- Versión del servidor: 8.0.41-0ubuntu0.22.04.1
 -- Versión de PHP: 8.1.2-1ubuntu2.20
 
@@ -49,6 +49,23 @@ INSERT INTO `empresas` (`id`, `nombre`, `razon_social`, `nif_cif`, `direccion`, 
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `productos`
+--
+
+CREATE TABLE `productos` (
+  `id` int NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text,
+  `cantidad` int NOT NULL DEFAULT '0',
+  `unidad` varchar(20) DEFAULT 'unidad',
+  `categoria` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -72,7 +89,7 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `empresa_id`, `nombre`, `apellidos`, `email`, `password_hash`, `rol`, `activo`, `last_login`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Gabriel', 'Callejón Sánchez', 'gabriel@checkcoop.com', '$2b$12$KIXu1nYWM5k9VhFZFDxG5eH1mAqz2J1n9WUsqGgBu.yGh7OzT8G0m', 'superadmin', 0, NULL, '2025-05-01 11:25:43', '2025-05-01 11:26:13'),
-(6, 1, 'Francisco', 'Usero Sánchez', 'fran@checkcoop.com', '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-08 19:57:00');
+(6, 1, 'Francisco', 'Usero', 'fran@checkcoop.com', '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-08 19:57:00');
 
 --
 -- Índices para tablas volcadas
@@ -85,6 +102,12 @@ ALTER TABLE `empresas`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uk_empresas_nombre` (`nombre`),
   ADD UNIQUE KEY `uk_empresas_nif_cif` (`nif_cif`);
+
+--
+-- Indices de la tabla `productos`
+--
+ALTER TABLE `productos`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `usuarios`
@@ -105,6 +128,12 @@ ALTER TABLE `usuarios`
 --
 ALTER TABLE `empresas`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `productos`
+--
+ALTER TABLE `productos`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
