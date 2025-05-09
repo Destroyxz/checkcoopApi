@@ -22,6 +22,8 @@ interface UserRow {
 
 const router = Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'UseroNoTieneNiIdeaDeAngular';  // Clave secreta para firmar el token
+
 // POST /auth/login: autentica usuario y devuelve JWT
 router.post(
   '/login',
@@ -65,13 +67,18 @@ router.post(
         return;
       }
 
-      // Generar JWT
-      const secret = process.env.JWT_SECRET!;
-      const token = jwt.sign({ id: user.id, rol: user.rol }, secret, {
-        expiresIn: '2h',
-      });
+      // Generar el token JWT
+      const payload = {
+        sub: user.id,  // ID del usuario
+        nombre: user.nombre,
+        rol: user.rol,
+        iat: Math.floor(Date.now() / 1000),  // Fecha de emisión
+        exp: Math.floor(Date.now() / 1000) + 60 * 60,  // Expiración de 1 hora
+      };
 
-      // Responder con token y datos de usuario (sin el hash)
+      const token = jwt.sign(payload, JWT_SECRET);  // Generar el token JWT
+
+      // Responder con el token y los datos del usuario (sin el hash)
       res.json({
         token,
         user: {

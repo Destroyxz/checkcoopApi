@@ -72,7 +72,7 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `empresa_id`, `nombre`, `apellidos`, `email`, `password_hash`, `rol`, `activo`, `last_login`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Gabriel', 'Callejón Sánchez', 'gabriel@checkcoop.com', '$2b$12$KIXu1nYWM5k9VhFZFDxG5eH1mAqz2J1n9WUsqGgBu.yGh7OzT8G0m', 'superadmin', 0, NULL, '2025-05-01 11:25:43', '2025-05-01 11:26:13'),
-(6, 1, 'Francisco', 'Usero', 'fran@checkcoop.com', '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-08 19:57:00');
+(6, 1, 'Francisco', 'Usero Sánchez', 'fran@checkcoop.com', '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-08 19:57:00');
 
 --
 -- Índices para tablas volcadas
