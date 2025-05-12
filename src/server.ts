@@ -5,7 +5,7 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import db from './db';
 
-//Imports de los EndPoints
+import jornadasRouter from './routes/jornadas';
 import authRouter from './routes/auth';
 
 const app = express();
@@ -20,13 +20,14 @@ app.use(cors({
 
 // Endpoints
 app.use('/auth', authRouter);
+app.use('/jornadas', jornadasRouter); // ✅ debe ir antes del 404
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API is running' });
 });
 
-// 404 handler
+// 404 handler (debe ir al final)
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: 'Not found' });
 });
