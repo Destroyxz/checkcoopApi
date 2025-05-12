@@ -1,82 +1,160 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import db from '../db';
+import { RowDataPacket } from 'mysql2';
 
 const router = Router();
 
-router.post('/',   async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-  const { usuario_id, horaEntrada, horaSalida } = req.body;
-
-  if (!usuario_id || !horaEntrada || !horaSalida) {
-   res.status(400).json({ message: 'Faltan datos' });
-   return 
-  }
-
-  const fecha = new Date().toISOString().slice(0, 10);
+// Iniciar jornada o nuevo tramo
+router.post('/iniciar', async (req: Request, res: Response) => {
+  const userId = 6; //(req as any).user.id;
 
   try {
-    // Paso 1: Obtener horarios del usuario
-    const [usuarios]: any = await db.query(
-      'SELECT hora_inicio_1, hora_fin_1, hora_inicio_2, hora_fin_2 FROM usuarios WHERE id = ?',
-      [usuario_id]
-    );
-    
-
-    if (!usuarios.length) {
-      res.status(404).json({ message: 'Usuario no encontrado' }) ;
-      return 
-    } 
-
-    const { hora_inicio_1, hora_fin_1, hora_inicio_2, hora_fin_2 } = usuarios[0];
-
-    // Paso 2: Calcular duración mínima obligatoria
-    const totalHorasObjetivo = (
-        (new Date(`1970-01-01T${hora_fin_1}Z`).getTime() - new Date(`1970-01-01T${hora_inicio_1}Z`).getTime()) +
-        (new Date(`1970-01-01T${hora_fin_2}Z`).getTime() - new Date(`1970-01-01T${hora_inicio_2}Z`).getTime())
-      ) / 3600000;
-      
-
-    // Paso 3: Calcular horas reales trabajadas
-    const entrada = new Date(horaEntrada);
-    const salida = new Date(horaSalida);
-    const horasTrabajadas = (salida.getTime() - entrada.getTime()) / 3600000;
-
-    // Paso 4: Validaciones
-    const llegoTarde = horaEntrada.slice(11, 19) > hora_inicio_1 ? 1 : 0;
-    const cumplioJornada = horasTrabajadas >= totalHorasObjetivo ? 1 : 0;
-
-    // Paso 5: Formatear duración
-    const horas = Math.floor(horasTrabajadas);
-    const minutos = Math.floor((horasTrabajadas - horas) * 60);
-    const duracion = `${horas}h ${minutos}m`;
-
-    // Paso 6: Ver si ya hay jornada
-    const [existing]: any = await db.query(
-      'SELECT id FROM jornadas WHERE usuario_id = ? AND fecha = ?',
-      [usuario_id, fecha]
+    const [jornadaRows] = await db.query<RowDataPacket[]>(
+      'SELECT id FROM jornadas WHERE usuario_id = ? AND fecha = CURDATE()',
+      [userId]
     );
 
-    if (existing.length > 0) {
-      await db.query(`
-        UPDATE jornadas
-        SET hora_entrada = ?, hora_salida = ?, duracion = ?, llego_tarde = ?, cumplio_jornada = ?, updated_at = NOW()
-        WHERE usuario_id = ? AND fecha = ?
-      `, [horaEntrada, horaSalida, duracion, llegoTarde, cumplioJornada, usuario_id, fecha]);
-    } else {
-      await db.query(`
-        INSERT INTO jornadas (usuario_id, fecha, hora_entrada, hora_salida, duracion, llego_tarde, cumplio_jornada)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [usuario_id, fecha, horaEntrada, horaSalida, duracion, llegoTarde, cumplioJornada]);
+    let jornadaId = jornadaRows[0]?.id;
+
+    if (!jornadaId) {
+      const [result]: any = await db.query(
+        'INSERT INTO jornadas (usuario_id, fecha) VALUES (?, CURDATE())',
+        [userId]
+      );
+      jornadaId = result.insertId;
     }
 
-    res.json({ success: true });
+    const [tramoAbierto] = await db.query<RowDataPacket[]>(
+      'SELECT id FROM jornada_tramos WHERE jornada_id = ? AND hora_fin IS NULL',
+      [jornadaId]
+    );
 
+    if (tramoAbierto.length > 0) {
+      res.status(400).json({ error: 'Ya tienes un tramo activo. Finalízalo antes.' });
+      return;
+    }
+
+    await db.query(
+      'INSERT INTO jornada_tramos (jornada_id, hora_inicio) VALUES (?, NOW())',
+      [jornadaId]
+    );
+
+    res.json({ mensaje: 'Tramo iniciado correctamente', jornadaId });
   } catch (err) {
-    console.error('Error en POST /jornadas:', err);
-    res.status(500).json({ message: 'Error interno' });
+    console.error('Error al iniciar jornada:', err);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
+// Finalizar tramo activo
+router.put('/finalizar', async (req: Request, res: Response) => {
+  const userId = 6;//(req as any).user.id;
+
+  try {
+    const [tramoRows] = await db.query<RowDataPacket[]>(
+      `SELECT jt.id, jt.jornada_id
+       FROM jornada_tramos jt
+       JOIN jornadas j ON jt.jornada_id = j.id
+       WHERE j.usuario_id = ? AND jt.hora_fin IS NULL`,
+      [userId]
+    );
+
+    const tramo = tramoRows[0];
+    if (!tramo) {
+      res.status(400).json({ error: 'No hay tramo activo para finalizar.' });
+      return;
+    }
+
+    await db.query(
+      'UPDATE jornada_tramos SET hora_fin = NOW() WHERE id = ?',
+      [tramo.id]
+    );
+
+    res.json({ mensaje: 'Tramo finalizado', jornadaId: tramo.jornada_id });
+  } catch (err) {
+    console.error('Error al finalizar tramo:', err);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
+// Ver si hay jornada activa
+router.get('/activa', async (req: Request, res: Response) => {
+  const userId = 6;//(req as any).user.id;
+
+  try {
+    const [rows] = await db.query<RowDataPacket[]>(
+      `SELECT j.fecha, jt.hora_inicio 
+       FROM jornada_tramos jt
+       JOIN jornadas j ON jt.jornada_id = j.id
+       WHERE j.usuario_id = ? AND jt.hora_fin IS NULL`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      res.json({ activa: false });
+      return;
+    }
+
+    const tramoActivo = rows[0];
+    res.json({
+      activa: true,
+      fecha: tramoActivo.fecha,
+      horaInicio: tramoActivo.hora_inicio
+    });
+  } catch (err) {
+    console.error('Error consultando jornada activa:', err);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+
+// Obtener resumen de jornada de hoy
+router.get('/hoy', async (req: Request, res: Response) => {
+  const userId = 6;//(req as any).user.id;
+
+  try {
+    const [jornadaRows] = await db.query<RowDataPacket[]>(
+      'SELECT id FROM jornadas WHERE usuario_id = ? AND fecha = CURDATE()',
+      [userId]
+    );
+
+    const jornada = jornadaRows[0];
+    if (!jornada) {
+      res.json({ jornada: null });
+      return;
+    }
+
+    const [tramos] = await db.query<RowDataPacket[]>(
+      'SELECT hora_inicio, hora_fin FROM jornada_tramos WHERE jornada_id = ? ORDER BY hora_inicio',
+      [jornada.id]
+    );
+
+    let totalMinutos = 0;
+    for (const t of tramos) {
+      if (t.hora_fin) {
+        const inicio = new Date(t.hora_inicio);
+        const fin = new Date(t.hora_fin);
+        totalMinutos += Math.floor((fin.getTime() - inicio.getTime()) / 60000);
+      }
+    }
+
+    const horasTrabajadas = (totalMinutos / 60).toFixed(2);
+    const completa = totalMinutos >= 7 * 60;
+    const partida = tramos.length > 1;
+
+    res.json({
+      fecha: new Date().toISOString().slice(0, 10),
+      horasTrabajadas: parseFloat(horasTrabajadas),
+      completa,
+      incompleta: !completa,
+      partida,
+      tramos: tramos.map((t: any) => ({
+        inicio: t.hora_inicio,
+        fin: t.hora_fin
+      }))
+    });
+  } catch (err) {
+    console.error('Error al obtener jornada de hoy:', err);
+    res.status(500).json({ error: 'Error interno' });
   }
 });
 

@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
 import db from './db';
-
+import verifyToken from './middleware/verifytoken';
 import jornadasRouter from './routes/jornadas';
 import authRouter from './routes/auth';
 
@@ -20,7 +20,9 @@ app.use(cors({
 
 // Endpoints
 app.use('/auth', authRouter);
-app.use('/jornadas', jornadasRouter); // ✅ debe ir antes del 404
+app.use('/jornadas', jornadasRouter); // 🔓 sin protección
+
+
 
 // Health check
 app.get('/', (req: Request, res: Response) => {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 12-05-2025 a las 20:10:12
+-- Tiempo de generación: 12-05-2025 a las 23:33:19
 -- Versión del servidor: 8.0.41-0ubuntu0.22.04.1
 -- Versión de PHP: 8.1.2-1ubuntu2.20
 
@@ -62,15 +62,39 @@ CREATE TABLE `jornadas` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `llego_tarde` tinyint(1) DEFAULT '0',
-  `cumplio_jornada` tinyint(1) DEFAULT '0'
+  `cumplio_jornada` tinyint(1) DEFAULT '0',
+  `total_minutos` int DEFAULT '0',
+  `tipo_id` tinyint DEFAULT NULL,
+  `partida` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `jornadas`
 --
 
-INSERT INTO `jornadas` (`id`, `usuario_id`, `fecha`, `hora_entrada`, `hora_salida`, `duracion`, `created_at`, `updated_at`, `llego_tarde`, `cumplio_jornada`) VALUES
-(1, 6, '2025-05-12', '2025-05-12 20:07:14', '2025-05-12 20:07:21', '0h 0m', '2025-05-12 20:00:04', '2025-05-12 20:07:21', 1, 0);
+INSERT INTO `jornadas` (`id`, `usuario_id`, `fecha`, `hora_entrada`, `hora_salida`, `duracion`, `created_at`, `updated_at`, `llego_tarde`, `cumplio_jornada`, `total_minutos`, `tipo_id`, `partida`) VALUES
+(1, 6, '2025-05-12', '2025-05-12 20:07:14', '2025-05-12 20:07:21', '0h 0m', '2025-05-12 20:00:04', '2025-05-12 20:07:21', 1, 0, 0, NULL, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `jornada_tramos`
+--
+
+CREATE TABLE `jornada_tramos` (
+  `id` bigint UNSIGNED NOT NULL,
+  `jornada_id` bigint UNSIGNED NOT NULL,
+  `hora_inicio` datetime NOT NULL,
+  `hora_fin` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `jornada_tramos`
+--
+
+INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VALUES
+(1, 1, '2025-05-12 22:30:14', '2025-05-12 22:30:21'),
+(2, 1, '2025-05-12 22:30:33', '2025-05-12 22:30:34');
 
 -- --------------------------------------------------------
 
@@ -88,6 +112,25 @@ CREATE TABLE `productos` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_jornada`
+--
+
+CREATE TABLE `tipo_jornada` (
+  `id` tinyint NOT NULL,
+  `descripcion` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `tipo_jornada`
+--
+
+INSERT INTO `tipo_jornada` (`id`, `descripcion`) VALUES
+(1, 'Completa'),
+(2, 'Incompleta');
 
 -- --------------------------------------------------------
 
@@ -138,12 +181,26 @@ ALTER TABLE `empresas`
 --
 ALTER TABLE `jornadas`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_usuario_fecha` (`usuario_id`,`fecha`);
+  ADD KEY `idx_usuario_fecha` (`usuario_id`,`fecha`),
+  ADD KEY `tipo_id` (`tipo_id`);
+
+--
+-- Indices de la tabla `jornada_tramos`
+--
+ALTER TABLE `jornada_tramos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `jornada_id` (`jornada_id`);
 
 --
 -- Indices de la tabla `productos`
 --
 ALTER TABLE `productos`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `tipo_jornada`
+--
+ALTER TABLE `tipo_jornada`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -173,6 +230,12 @@ ALTER TABLE `jornadas`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT de la tabla `jornada_tramos`
+--
+ALTER TABLE `jornada_tramos`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
@@ -192,7 +255,14 @@ ALTER TABLE `usuarios`
 -- Filtros para la tabla `jornadas`
 --
 ALTER TABLE `jornadas`
-  ADD CONSTRAINT `fk_jornadas_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_jornadas_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `jornadas_ibfk_1` FOREIGN KEY (`tipo_id`) REFERENCES `tipo_jornada` (`id`);
+
+--
+-- Filtros para la tabla `jornada_tramos`
+--
+ALTER TABLE `jornada_tramos`
+  ADD CONSTRAINT `jornada_tramos_ibfk_1` FOREIGN KEY (`jornada_id`) REFERENCES `jornadas` (`id`);
 
 --
 -- Filtros para la tabla `usuarios`
