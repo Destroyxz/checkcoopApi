@@ -6,8 +6,9 @@ const router = Router();
 
 // Iniciar jornada o nuevo tramo
 router.post('/iniciar', async (req: Request, res: Response) => {
-  const userId = 6; //(req as any).user.id;
-
+  const user = (req as any).user;
+  
+  const userId = user.sub; 
   try {
     const [jornadaRows] = await db.query<RowDataPacket[]>(
       'SELECT id FROM jornadas WHERE usuario_id = ? AND fecha = CURDATE()',
@@ -48,7 +49,9 @@ router.post('/iniciar', async (req: Request, res: Response) => {
 
 // Finalizar tramo activo
 router.put('/finalizar', async (req: Request, res: Response) => {
-  const userId = 6;//(req as any).user.id;
+  const user = (req as any).user;
+  
+  const userId = user.sub; // 👈 Aquí accedes al ID
 
   try {
     const [tramoRows] = await db.query<RowDataPacket[]>(
@@ -79,7 +82,9 @@ router.put('/finalizar', async (req: Request, res: Response) => {
 
 // Ver si hay jornada activa
 router.get('/activa', async (req: Request, res: Response) => {
-  const userId = 6;//(req as any).user.id;
+  const user = (req as any).user;
+  
+  const userId = user.sub; // 👈 Aquí accedes al ID
 
   try {
     const [rows] = await db.query<RowDataPacket[]>(
@@ -109,7 +114,9 @@ router.get('/activa', async (req: Request, res: Response) => {
 
 // Obtener resumen de jornada de hoy
 router.get('/hoy', async (req: Request, res: Response) => {
-  const userId = 6;//(req as any).user.id;
+  const user = (req as any).user;
+  
+  const userId = user.sub; // 👈 Aquí accedes al ID
 
   try {
     const [jornadaRows] = await db.query<RowDataPacket[]>(
