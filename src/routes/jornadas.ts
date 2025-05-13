@@ -164,5 +164,62 @@ router.get('/hoy', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error interno' });
   }
 });
+// Obtener todas las jornadas con datos del usuario
+router.get('/todas', async (req: Request, res: Response) => {
+  try {
+    const [rows] = await db.query<RowDataPacket[]>(
+      `SELECT 
+         j.id,
+         j.usuario_id,
+         u.nombre,
+         j.fecha,
+         MIN(jt.hora_inicio) AS hora_entrada,
+         MAX(jt.hora_fin) AS hora_salida,
+         CASE 
+           WHEN COUNT(jt.id) > 1 THEN 'Partida' 
+           ELSE 'Normal' 
+         END AS tipo_jornada,
+         CASE 
+           WHEN TIMESTAMPDIFF(MINUTE, MIN(jt.hora_inicio), MAX(jt.hora_fin)) >= 420 THEN 'Completada'
+           WHEN MAX(jt.hora_fin) IS NULL THEN 'Incompleta'
+           ELSE 'Con retraso'
+         END AS estado
+       FROM jornadas j
+       JOIN usuarios u ON j.usuario_id = u.id
+       LEFT JOIN jornada_tramos jt ON jt.jornada_id = j.id
+       GROUP BY j.id
+       ORDER BY j.fecha DESC`
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error al obtener todas las jornadas:', err);
+    res.status(500).json({ error: 'Error interno' });
+  }
+});
+router.get('/usuarios', async (req: Request, res: Response) => {
+  try {
+    const [rows] = await db.query('SELECT id, nombre, apellidos, email, rol FROM usuarios WHERE activo = 1');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error al obtener usuarios:', err);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+});
+router.get('/:id/tramos', async (req: Request, res: Response) => {
+  const jornadaId = parseInt(req.params.id, 10);
+
+  try {
+    const [tramos] = await db.query<RowDataPacket[]>(
+      'SELECT hora_inicio AS inicio, hora_fin AS fin FROM jornada_tramos WHERE jornada_id = ? ORDER BY hora_inicio',
+      [jornadaId]
+    );
+
+    res.json(tramos);
+  } catch (err) {
+    console.error('Error al obtener tramos:', err);
+    res.status(500).json({ message: 'Error al obtener tramos' });
+  }
+});
 
 export default router;
