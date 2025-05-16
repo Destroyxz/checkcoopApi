@@ -7,9 +7,10 @@ const router = Router();
 // Iniciar jornada o nuevo tramo
 router.post('/iniciar', async (req: Request, res: Response) => {
   const user = (req as any).user;
-  
-  const userId = user.sub; 
+  const userId = user.id; // Cambiado a user.id
+
   try {
+    // Buscar jornada hoy para ese usuario
     const [jornadaRows] = await db.query<RowDataPacket[]>(
       'SELECT id FROM jornadas WHERE usuario_id = ? AND fecha = CURDATE()',
       [userId]
@@ -18,6 +19,7 @@ router.post('/iniciar', async (req: Request, res: Response) => {
     let jornadaId = jornadaRows[0]?.id;
 
     if (!jornadaId) {
+      // Crear nueva jornada hoy
       const [result]: any = await db.query(
         'INSERT INTO jornadas (usuario_id, fecha) VALUES (?, CURDATE())',
         [userId]
@@ -25,6 +27,7 @@ router.post('/iniciar', async (req: Request, res: Response) => {
       jornadaId = result.insertId;
     }
 
+    // Verificar si hay tramo activo
     const [tramoAbierto] = await db.query<RowDataPacket[]>(
       'SELECT id FROM jornada_tramos WHERE jornada_id = ? AND hora_fin IS NULL',
       [jornadaId]
@@ -35,6 +38,7 @@ router.post('/iniciar', async (req: Request, res: Response) => {
       return;
     }
 
+    // Insertar tramo nuevo
     await db.query(
       'INSERT INTO jornada_tramos (jornada_id, hora_inicio) VALUES (?, NOW())',
       [jornadaId]
@@ -50,8 +54,7 @@ router.post('/iniciar', async (req: Request, res: Response) => {
 // Finalizar tramo activo
 router.put('/finalizar', async (req: Request, res: Response) => {
   const user = (req as any).user;
-  
-  const userId = user.sub; // 👈 Aquí accedes al ID
+  const userId = user.id; // Cambiado a user.id
 
   try {
     const [tramoRows] = await db.query<RowDataPacket[]>(
@@ -83,8 +86,7 @@ router.put('/finalizar', async (req: Request, res: Response) => {
 // Ver si hay jornada activa
 router.get('/activa', async (req: Request, res: Response) => {
   const user = (req as any).user;
-  
-  const userId = user.sub; // 👈 Aquí accedes al ID
+  const userId = user.id; // Cambiado a user.id
 
   try {
     const [rows] = await db.query<RowDataPacket[]>(
@@ -115,8 +117,7 @@ router.get('/activa', async (req: Request, res: Response) => {
 // Obtener resumen de jornada de hoy
 router.get('/hoy', async (req: Request, res: Response) => {
   const user = (req as any).user;
-  
-  const userId = user.sub; // 👈 Aquí accedes al ID
+  const userId = user.id; // Cambiado a user.id
 
   try {
     const [jornadaRows] = await db.query<RowDataPacket[]>(
@@ -164,6 +165,7 @@ router.get('/hoy', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error interno' });
   }
 });
+
 // Obtener todas las jornadas con datos del usuario
 router.get('/todas', async (req: Request, res: Response) => {
   try {
@@ -197,6 +199,7 @@ router.get('/todas', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error interno' });
   }
 });
+
 router.get('/usuarios', async (req: Request, res: Response) => {
   try {
     const [rows] = await db.query('SELECT id, nombre, apellidos, email, rol FROM usuarios WHERE activo = 1');

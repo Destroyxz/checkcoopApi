@@ -12,6 +12,7 @@ interface AuthBody {
 // Tipado de la fila de usuario desde la BD
 interface UserRow {
   id: number;
+  empresa_id: number;
   nombre: string;
   apellidos: string;
   email: string;
@@ -42,7 +43,7 @@ router.post(
     try {
       // Recuperar usuario por email
       const [rows] = await db.execute(
-        'SELECT id, nombre, apellidos, email, password_hash, rol, activo FROM usuarios WHERE email = ?',
+        'SELECT id, empresa_id, nombre, apellidos, email, password_hash, rol, activo FROM usuarios WHERE email = ?',
         [email]
       );
       const users = rows as UserRow[];
@@ -69,26 +70,32 @@ router.post(
 
       // Generar el token JWT
       const payload = {
-        sub: user.id,  // ID del usuario
-        nombre: user.nombre,
-        rol: user.rol,
-        iat: Math.floor(Date.now() / 1000),  // Fecha de emisión
-        exp: Math.floor(Date.now() / 1000) + 60 * 60,  // Expiración de 1 hora
-      };
+      id: user.id,
+      empresa_id: user.empresa_id,
+      nombre: user.nombre,
+      apellidos: user.apellidos,
+      email: user.email,
+      rol: user.rol,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora
+};
 
       const token = jwt.sign(payload, JWT_SECRET);  // Generar el token JWT
 
       // Responder con el token y los datos del usuario (sin el hash)
-      res.json({
-        token,
-        user: {
-          id: user.id,
-          nombre: user.nombre,
-          apellidos: user.apellidos,
-          email: user.email,
-          rol: user.rol,
-        },
-      });
+     res.json({
+  token,
+  user: {
+    id: user.id,
+    empresa_id: user.empresa_id,
+    nombre: user.nombre,
+    apellidos: user.apellidos,
+    email: user.email,
+    rol: user.rol,
+
+  }
+});
+
     } catch (err) {
       next(err);
     }

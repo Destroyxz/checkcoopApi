@@ -104,6 +104,7 @@ INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VAL
 
 CREATE TABLE `productos` (
   `id` int NOT NULL,
+  `numEmpresa` int NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `descripcion` text,
   `cantidad` int NOT NULL DEFAULT '0',
