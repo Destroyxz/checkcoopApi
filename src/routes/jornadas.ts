@@ -221,5 +221,40 @@ router.get('/:id/tramos', async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error al obtener tramos' });
   }
 });
+router.put('/editar-tramos', async (req: Request, res: Response) => {
+  const { jornadaId, tramos } = req.body;
+
+  try {
+    await db.query('DELETE FROM jornada_tramos WHERE jornada_id = ?', [jornadaId]);
+
+    for (const t of tramos) {
+      await db.query(
+        'INSERT INTO jornada_tramos (jornada_id, hora_inicio, hora_fin) VALUES (?, ?, ?)',
+        [jornadaId, t.inicio, t.fin || null]
+      );
+    }
+
+    res.json({ mensaje: 'Tramos actualizados correctamente' });
+  } catch (err) {
+    console.error('Error actualizando tramos:', err);
+    res.status(500).json({ error: 'Error al actualizar tramos' });
+  }
+});
+router.delete('/:id', async (req: Request, res: Response) => {
+  const jornadaId = parseInt(req.params.id, 10);
+
+  try {
+    // Borra primero los tramos (por FK si corresponde)
+    await db.query('DELETE FROM jornada_tramos WHERE jornada_id = ?', [jornadaId]);
+
+    // Luego la jornada
+    await db.query('DELETE FROM jornadas WHERE id = ?', [jornadaId]);
+
+    res.json({ mensaje: 'Jornada eliminada correctamente' });
+  } catch (err) {
+    console.error('Error al eliminar jornada:', err);
+    res.status(500).json({ error: 'Error interno al eliminar jornada' });
+  }
+});
 
 export default router;
