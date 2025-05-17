@@ -4,10 +4,13 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
 import db from './db';
+
+
 import verifyToken from './middleware/verifytoken';
 import jornadasRouter from './routes/jornadas';
 import authRouter from './routes/auth';
-
+import companiesRouter from './routes/companies'
+import userRouter from './routes/user'
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
@@ -21,8 +24,8 @@ app.use(cors({
 // Endpoints
 app.use('/auth', authRouter);
 app.use('/jornadas', jornadasRouter); // 🔓 sin protección
-
-
+app.use('/company', companiesRouter )
+app.use('/user', userRouter )
 
 // Health check
 app.get('/', (req: Request, res: Response) => {

@@ -103,7 +103,7 @@ router.post(
 );
 
 // POST /auth/register: crea un nuevo usuario
-router.post(
+/*router.post(
   '/register',
   async (
     req: Request<{}, {}, { username: string; surname: string; email: string; password: string }>,
@@ -142,6 +142,6 @@ router.post(
       next(err);
     }
   }
-);
+);*/
 
 export default router;
