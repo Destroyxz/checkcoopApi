@@ -19,11 +19,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
   origin: 'http://localhost:4200',
+  credentials: true
 }));
 
 // Endpoints
 app.use('/auth', authRouter);
-app.use('/jornadas', jornadasRouter); // 🔓 sin protección
+app.use('/jornadas',  verifyToken, jornadasRouter); // 🔓 sin protección
 app.use('/company', companiesRouter )
 app.use('/user', userRouter )
 
