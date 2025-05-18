@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 12-05-2025 a las 23:33:19
+-- Tiempo de generación: 19-05-2025 a las 00:50:33
 -- Versión del servidor: 8.0.41-0ubuntu0.22.04.1
 -- Versión de PHP: 8.1.2-1ubuntu2.20
 
@@ -34,7 +34,7 @@ CREATE TABLE `empresas` (
   `nif_cif` varchar(9) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `direccion` text COLLATE utf8mb4_general_ci,
   `email_contacto` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefono` int(9) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefono` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -44,7 +44,22 @@ CREATE TABLE `empresas` (
 --
 
 INSERT INTO `empresas` (`id`, `nombre`, `razon_social`, `nif_cif`, `direccion`, `email_contacto`, `telefono`, `created_at`, `updated_at`) VALUES
-(1, 'CheckCoop', 'CheckCoop.SL', 'B1234567J', 'C/ Señorío de La Sal, nº 69', 'checkCoop@info.com', '91027570', '2025-05-01 11:02:00', '2025-05-01 11:02:00');
+(1, 'CheckCoop', 'CheckCoop.SL', 'B1234567J', 'C/ Señorío de La Sal, nº 69', 'checkCoop@info.com', 91027570, '2025-05-01 11:02:00', '2025-05-01 11:02:00'),
+(3, 'elPepe', 'elPepe COAN', '12345678P', 'Calle Leonardo de Figueroa 80', 'elPepe@company.org', 640967800, '2025-05-17 13:42:04', '2025-05-17 13:42:04');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `imagenes_perfil`
+--
+
+CREATE TABLE `imagenes_perfil` (
+  `id` bigint UNSIGNED NOT NULL,
+  `usuario_id` bigint UNSIGNED NOT NULL,
+  `ruta_imagen` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -58,7 +73,7 @@ CREATE TABLE `jornadas` (
   `fecha` date NOT NULL,
   `hora_entrada` datetime DEFAULT NULL,
   `hora_salida` datetime DEFAULT NULL,
-  `duracion` varchar(20) DEFAULT NULL,
+  `duracion` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `llego_tarde` tinyint(1) DEFAULT '0',
@@ -66,14 +81,14 @@ CREATE TABLE `jornadas` (
   `total_minutos` int DEFAULT '0',
   `tipo_id` tinyint DEFAULT NULL,
   `partida` tinyint(1) DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `jornadas`
 --
 
 INSERT INTO `jornadas` (`id`, `usuario_id`, `fecha`, `hora_entrada`, `hora_salida`, `duracion`, `created_at`, `updated_at`, `llego_tarde`, `cumplio_jornada`, `total_minutos`, `tipo_id`, `partida`) VALUES
-(1, 6, '2025-05-12', '2025-05-12 20:07:14', '2025-05-12 20:07:21', '0h 0m', '2025-05-12 20:00:04', '2025-05-12 20:07:21', 1, 0, 0, NULL, 0);
+(1, 8, '2025-05-19', NULL, NULL, NULL, '2025-05-19 00:30:17', '2025-05-19 00:30:17', 0, 0, 0, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -86,15 +101,14 @@ CREATE TABLE `jornada_tramos` (
   `jornada_id` bigint UNSIGNED NOT NULL,
   `hora_inicio` datetime NOT NULL,
   `hora_fin` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `jornada_tramos`
 --
 
 INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VALUES
-(1, 1, '2025-05-12 22:30:14', '2025-05-12 22:30:21'),
-(2, 1, '2025-05-12 22:30:33', '2025-05-12 22:30:34');
+(1, 1, '2025-05-19 00:34:20', '2025-05-19 00:34:22');
 
 -- --------------------------------------------------------
 
@@ -105,14 +119,14 @@ INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VAL
 CREATE TABLE `productos` (
   `id` int NOT NULL,
   `numEmpresa` int NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `descripcion` text,
+  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `descripcion` text COLLATE utf8mb4_general_ci,
   `cantidad` int NOT NULL DEFAULT '0',
-  `unidad` varchar(20) DEFAULT 'unidad',
-  `categoria` varchar(50) DEFAULT NULL,
+  `unidad` varchar(20) COLLATE utf8mb4_general_ci DEFAULT 'unidad',
+  `categoria` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -122,8 +136,8 @@ CREATE TABLE `productos` (
 
 CREATE TABLE `tipo_jornada` (
   `id` tinyint NOT NULL,
-  `descripcion` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `descripcion` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `tipo_jornada`
@@ -140,31 +154,33 @@ INSERT INTO `tipo_jornada` (`id`, `descripcion`) VALUES
 --
 
 CREATE TABLE `usuarios` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `empresa_id` bigint(20) UNSIGNED NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `apellidos` varchar(100) DEFAULT NULL,
-  `email` varchar(255) NOT NULL,
-  `telefono` int(9) NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `rol` enum('superadmin','admin','usuario') NOT NULL,
-  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `id` bigint UNSIGNED NOT NULL,
+  `empresa_id` bigint UNSIGNED NOT NULL,
+  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `apellidos` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `telefono` int NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `rol` enum('superadmin','admin','usuario') COLLATE utf8mb4_general_ci NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
   `last_login` datetime DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `hora_inicio_1` time DEFAULT '09:00:00',
   `hora_fin_1` time DEFAULT '13:00:00',
-  `hora_inicio_2` time DEFAULT '14:00:00',
-  `hora_fin_2` time DEFAULT '17:00:00'
+  `hora_inicio_2` time DEFAULT '09:00:00',
+  `hora_fin_2` time DEFAULT '13:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `empresa_id`, `nombre`, `apellidos`, `email`, `telefono`, `password_hash`, `rol`, `activo`, `last_login`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Gabriel', 'Callejón Sánchez', 'gabriel@checkcoop.com', 640967800, '$2b$12$IQdepNoSxKApBT7w3YChn.8gq/7nPpCr8ypDGcKyhK4efAmySVxZC', 'superadmin', 1, NULL, '2025-05-01 11:25:43', '2025-05-17 11:56:57'),
-(6, 1, 'Francisco', 'Usero', 'fran@checkcoop.com', 123456789, '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-17 11:57:01');
+INSERT INTO `usuarios` (`id`, `empresa_id`, `nombre`, `apellidos`, `email`, `telefono`, `password_hash`, `rol`, `activo`, `last_login`, `created_at`, `updated_at`, `hora_inicio_1`, `hora_fin_1`, `hora_inicio_2`, `hora_fin_2`) VALUES
+(1, 1, 'Gabriel', 'Callejón Sánchez', 'gabriel@checkcoop.com', 640967800, '$2b$12$IQdepNoSxKApBT7w3YChn.8gq/7nPpCr8ypDGcKyhK4efAmySVxZC', 'superadmin', 1, NULL, '2025-05-01 11:25:43', '2025-05-17 13:14:08', '09:00:00', '13:00:00', '09:00:00', '13:00:00'),
+(6, 1, 'Francisco', 'Usero', 'fran@checkcoop.com', 123456789, '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-17 11:57:01', '09:00:00', '13:00:00', '09:00:00', '13:00:00'),
+(7, 1, 'el Pepe', 'Ete Sech', 'elpepe@checkcoop.com', 123456789, '$2b$10$XNe70TnpbkCANrKeFXvKJ.KxlsIfGcOrUYkIwwIQzjuugrEF694he', 'admin', 1, NULL, '2025-05-17 12:41:16', '2025-05-17 12:41:16', '09:00:00', '13:00:00', '09:00:00', '13:00:00'),
+(8, 1, 'franE', 'Usero', 'franE@checkcoop.com', 640295526, '$2b$10$yrEOZHLzPWY3i71jhLEwd.Oc78unY.QMn/M.PG0Vu3AaGHZOyksFa', 'usuario', 1, NULL, '2025-05-18 21:00:23', '2025-05-18 21:00:23', '09:00:00', '13:00:00', '09:00:00', '13:00:00');
 
 --
 -- Índices para tablas volcadas
@@ -177,6 +193,13 @@ ALTER TABLE `empresas`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uk_empresas_nombre` (`nombre`),
   ADD UNIQUE KEY `uk_empresas_nif_cif` (`nif_cif`);
+
+--
+-- Indices de la tabla `imagenes_perfil`
+--
+ALTER TABLE `imagenes_perfil`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_usuario_id` (`usuario_id`);
 
 --
 -- Indices de la tabla `jornadas`
@@ -223,7 +246,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `empresas`
 --
 ALTER TABLE `empresas`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `imagenes_perfil`
+--
+ALTER TABLE `imagenes_perfil`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `jornadas`
@@ -235,36 +264,23 @@ ALTER TABLE `jornadas`
 -- AUTO_INCREMENT de la tabla `jornada_tramos`
 --
 ALTER TABLE `jornada_tramos`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `productos`
---
-ALTER TABLE `productos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Restricciones para tablas volcadas
 --
 
 --
--- Filtros para la tabla `jornadas`
+-- Filtros para la tabla `imagenes_perfil`
 --
-ALTER TABLE `jornadas`
-  ADD CONSTRAINT `fk_jornadas_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `jornadas_ibfk_1` FOREIGN KEY (`tipo_id`) REFERENCES `tipo_jornada` (`id`);
-
---
--- Filtros para la tabla `jornada_tramos`
---
-ALTER TABLE `jornada_tramos`
-  ADD CONSTRAINT `jornada_tramos_ibfk_1` FOREIGN KEY (`jornada_id`) REFERENCES `jornadas` (`id`);
+ALTER TABLE `imagenes_perfil`
+  ADD CONSTRAINT `fk_usuario_id` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `usuarios`
