@@ -1,12 +1,12 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { ResultSetHeader } from 'mysql2';
+import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import multer from 'multer';
 import path from 'path';
 import db from '../db';
 
 const router = Router();
 
-interface NewCompanyBody{
+interface company{
     nombre: string,
     razon_social: string,
     cif: string,
@@ -18,9 +18,7 @@ interface NewCompanyBody{
 
 router.get('/allcompanies', async (req, res) => {
   try {
-    // Ejecuta la consulta
     const [empresas] = await db.query('SELECT * FROM empresas');
-    // Devuelve el resultado
     res.json(empresas);
   } catch (err) {
     console.error('Error al leer empresas:', err);
@@ -28,11 +26,11 @@ router.get('/allcompanies', async (req, res) => {
   }
 });
 
-
+//Crear una empresa
 router.post(
   '/newCompany',
   async (
-    req: Request<{}, {}, NewCompanyBody>,
+    req: Request<{}, {}, company>,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -87,5 +85,114 @@ router.post(
   }
 );
 
+
+//Obtener todas las empresas
+router.get(
+  '/empresas',
+  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const [rows] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+          e.id,
+          e.nombre,
+          e.razon_social,
+          e.nif_cif,
+          e.direccion,
+          e.email_contacto,
+          e.telefono,
+          e.created_at,
+          e.updated_at,
+          COALESCE(u.cnt,0) AS userCount
+        FROM empresas e
+        /* derivamos un map empresa_id → count */
+        LEFT JOIN (
+          SELECT empresa_id, COUNT(*) AS cnt
+          FROM usuarios
+          GROUP BY empresa_id
+        ) AS u ON u.empresa_id = e.id
+        `
+      );
+
+      res.json(rows);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// Obtener una empresa por ID con el recuento de usuarios
+router.get(
+  '/empresas/:empresa_id',
+  async (
+    req: Request<{ empresa_id: string }>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const empresaId = Number(req.params.empresa_id);
+    if (isNaN(empresaId)) {
+      res.status(400).json({ message: 'empresa_id inválido' });
+      return;
+    }
+    try {
+      const [rows] = await db.query<RowDataPacket[]>(
+        `
+        SELECT
+          e.id,
+          e.nombre,
+          e.razon_social,
+          e.nif_cif,
+          e.direccion,
+          e.email_contacto,
+          e.telefono,
+          e.created_at,
+          e.updated_at,
+          COALESCE(u.cnt,0) AS userCount
+        FROM empresas e
+        LEFT JOIN (
+          SELECT empresa_id, COUNT(*) AS cnt
+          FROM usuarios
+          GROUP BY empresa_id
+        ) AS u ON u.empresa_id = e.id
+        WHERE e.id = ?
+        `,
+        [empresaId]
+      );
+      if (rows.length === 0) {
+        res.status(404).json({ message: 'Empresa no encontrada' });
+        return;
+      }
+      res.json(rows[0]);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+//Elimina una empresa por ID
+router.delete(
+  '/empresas/:id',
+  async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ message: 'ID de empresa inválido' });
+      return;
+    }
+
+    try {
+      const [result] = await db.query<ResultSetHeader>(
+        'DELETE FROM empresas WHERE id = ?',
+        [id]
+      );
+      if (result.affectedRows === 0) {
+        res.status(404).json({ message: 'Empresa no encontrada' });
+        return;
+      }
+      res.sendStatus(204);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 export default router;
