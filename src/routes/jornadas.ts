@@ -226,6 +226,10 @@ router.get('/:id/tramos', async (req: Request, res: Response) => {
 });
 router.put('/editar-tramos', async (req: Request, res: Response) => {
   const { jornadaId, tramos } = req.body;
+if (!Array.isArray(tramos) || tramos.length === 0) {
+   res.status(400).json({ error: 'Debe haber al menos un tramo.' });
+   return;
+}
 
   try {
     await db.query('DELETE FROM jornada_tramos WHERE jornada_id = ?', [jornadaId]);
