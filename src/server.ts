@@ -5,6 +5,7 @@ import cors from 'cors';
 import bcrypt from 'bcrypt';
 import db from './db';
 import productosRouter from './routes/productos';
+import tareasRoutes from './routes/tareas';
 
 import verifyToken from './middleware/verifytoken';
 import jornadasRouter from './routes/jornadas';
@@ -27,6 +28,7 @@ app.use('/auth', authRouter);
 app.use('/jornadas',  verifyToken, jornadasRouter); // 🔓 sin protección
 app.use('/company', companiesRouter )
 app.use('/user', userRouter )
+app.use('/api/tareas',verifyToken, tareasRoutes)
 app.use('/productos', productosRouter);
 // Health check
 app.get('/', (req: Request, res: Response) => {
