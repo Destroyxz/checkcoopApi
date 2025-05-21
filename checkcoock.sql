@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 19-05-2025 a las 00:50:33
--- Versión del servidor: 8.0.41-0ubuntu0.22.04.1
--- Versión de PHP: 8.1.2-1ubuntu2.20
+-- Tiempo de generación: 21-05-2025 a las 21:34:33
+-- Versión del servidor: 8.0.42-0ubuntu0.22.04.1
+-- Versión de PHP: 8.1.2-1ubuntu2.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,11 +29,11 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `empresas` (
   `id` bigint UNSIGNED NOT NULL,
-  `nombre` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `razon_social` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nif_cif` varchar(9) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `direccion` text COLLATE utf8mb4_general_ci,
-  `email_contacto` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nombre` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `razon_social` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nif_cif` varchar(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `direccion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `email_contacto` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `telefono` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -56,7 +56,7 @@ INSERT INTO `empresas` (`id`, `nombre`, `razon_social`, `nif_cif`, `direccion`, 
 CREATE TABLE `imagenes_perfil` (
   `id` bigint UNSIGNED NOT NULL,
   `usuario_id` bigint UNSIGNED NOT NULL,
-  `ruta_imagen` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `ruta_imagen` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `creado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -73,7 +73,7 @@ CREATE TABLE `jornadas` (
   `fecha` date NOT NULL,
   `hora_entrada` datetime DEFAULT NULL,
   `hora_salida` datetime DEFAULT NULL,
-  `duracion` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `duracion` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `llego_tarde` tinyint(1) DEFAULT '0',
@@ -88,7 +88,8 @@ CREATE TABLE `jornadas` (
 --
 
 INSERT INTO `jornadas` (`id`, `usuario_id`, `fecha`, `hora_entrada`, `hora_salida`, `duracion`, `created_at`, `updated_at`, `llego_tarde`, `cumplio_jornada`, `total_minutos`, `tipo_id`, `partida`) VALUES
-(1, 8, '2025-05-19', NULL, NULL, NULL, '2025-05-19 00:30:17', '2025-05-19 00:30:17', 0, 0, 0, NULL, 0);
+(1, 8, '2025-05-19', NULL, NULL, NULL, '2025-05-19 00:30:17', '2025-05-19 00:30:17', 0, 0, 0, NULL, 0),
+(2, 8, '2025-05-21', NULL, NULL, NULL, '2025-05-21 21:11:56', '2025-05-21 21:11:56', 0, 0, 0, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -108,7 +109,11 @@ CREATE TABLE `jornada_tramos` (
 --
 
 INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VALUES
-(1, 1, '2025-05-19 00:34:20', '2025-05-19 00:34:22');
+(57, 1, '2025-05-19 00:40:00', '2025-05-31 06:39:00'),
+(58, 1, '2025-05-19 21:02:00', '2025-05-19 21:37:00'),
+(59, 1, '2025-05-19 21:02:00', '2025-05-19 21:37:00'),
+(60, 1, '2025-05-19 21:37:00', '2025-05-19 21:37:00'),
+(61, 2, '2025-05-21 21:11:57', '2025-05-21 21:11:58');
 
 -- --------------------------------------------------------
 
@@ -119,14 +124,51 @@ INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VAL
 CREATE TABLE `productos` (
   `id` int NOT NULL,
   `numEmpresa` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb4_general_ci,
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `descripcion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `cantidad` int NOT NULL DEFAULT '0',
-  `unidad` varchar(20) COLLATE utf8mb4_general_ci DEFAULT 'unidad',
-  `categoria` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `unidad` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'unidad',
+  `categoria` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `precio` decimal(10,2) NOT NULL DEFAULT '0.00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `productos`
+--
+
+INSERT INTO `productos` (`id`, `numEmpresa`, `nombre`, `descripcion`, `cantidad`, `unidad`, `categoria`, `created_at`, `updated_at`, `precio`) VALUES
+(5, 1, 'aaa', 'buenasg\n', 5, 'kg', 'a', '2025-05-20 16:02:14', '2025-05-21 17:19:27', '3.00'),
+(10, 1, 'a', 'a', 26, 'unidad', 'a', '2025-05-20 17:07:20', '2025-05-20 17:07:20', '2.00');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tareas`
+--
+
+CREATE TABLE `tareas` (
+  `id` bigint UNSIGNED NOT NULL,
+  `usuario_id` bigint UNSIGNED NOT NULL,
+  `empresa_id` bigint UNSIGNED NOT NULL,
+  `fecha` date NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `descripcion` text,
+  `estado` enum('pendiente','en progreso','completada','cancelada') DEFAULT 'pendiente',
+  `prioridad` enum('baja','media','alta') DEFAULT 'media',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `tareas`
+--
+
+INSERT INTO `tareas` (`id`, `usuario_id`, `empresa_id`, `fecha`, `titulo`, `descripcion`, `estado`, `prioridad`, `created_at`, `updated_at`) VALUES
+(3, 8, 1, '2025-05-21', 'ada', 'a', 'pendiente', 'media', '2025-05-21 20:11:09', '2025-05-21 20:40:51'),
+(13, 8, 1, '2025-05-20', 'aa', 'a', 'en progreso', 'media', '2025-05-21 21:02:04', '2025-05-21 21:31:17'),
+(14, 8, 1, '2025-05-21', 'test', 'pollas como ollas', 'completada', 'alta', '2025-05-21 21:30:05', '2025-05-21 21:30:05');
 
 -- --------------------------------------------------------
 
@@ -136,7 +178,7 @@ CREATE TABLE `productos` (
 
 CREATE TABLE `tipo_jornada` (
   `id` tinyint NOT NULL,
-  `descripcion` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `descripcion` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -156,12 +198,12 @@ INSERT INTO `tipo_jornada` (`id`, `descripcion`) VALUES
 CREATE TABLE `usuarios` (
   `id` bigint UNSIGNED NOT NULL,
   `empresa_id` bigint UNSIGNED NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `apellidos` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `apellidos` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `telefono` int NOT NULL,
-  `password_hash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `rol` enum('superadmin','admin','usuario') COLLATE utf8mb4_general_ci NOT NULL,
+  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `rol` enum('superadmin','admin','usuario') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT '1',
   `last_login` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -223,6 +265,14 @@ ALTER TABLE `productos`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indices de la tabla `tareas`
+--
+ALTER TABLE `tareas`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `usuario_id` (`usuario_id`),
+  ADD KEY `empresa_id` (`empresa_id`);
+
+--
 -- Indices de la tabla `tipo_jornada`
 --
 ALTER TABLE `tipo_jornada`
@@ -258,13 +308,25 @@ ALTER TABLE `imagenes_perfil`
 -- AUTO_INCREMENT de la tabla `jornadas`
 --
 ALTER TABLE `jornadas`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `jornada_tramos`
 --
 ALTER TABLE `jornada_tramos`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+
+--
+-- AUTO_INCREMENT de la tabla `productos`
+--
+ALTER TABLE `productos`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT de la tabla `tareas`
+--
+ALTER TABLE `tareas`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
@@ -281,6 +343,13 @@ ALTER TABLE `usuarios`
 --
 ALTER TABLE `imagenes_perfil`
   ADD CONSTRAINT `fk_usuario_id` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `tareas`
+--
+ALTER TABLE `tareas`
+  ADD CONSTRAINT `tareas_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tareas_ibfk_2` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `usuarios`
