@@ -21,6 +21,23 @@ interface user {
   horaSalida2?: string;     
 }
 
+interface UserUpdate {
+  nombre: string;
+  apellidos?: string;
+  email: string;
+  telefono?: string;
+  rol: 'usuario' | 'admin' | 'superadmin';
+  empresa_id: number;
+  password: string;
+  activo: boolean;
+  horaInicio: string;
+  horaSalida: string;
+  turnoPartido?: boolean;
+  horaInicio2?: string;
+  horaSalida2?: string;
+}
+
+
 // 1) Crear usuario 
 router.post(
   '/newUser',
@@ -219,6 +236,124 @@ router.delete(
         return;
       }
       res.sendStatus(204);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.put<{ id: string }, any, UserUpdate>(
+  '/usuarios/:id',
+  async (
+    req: Request<{ id: string }, any, UserUpdate>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const {
+      nombre, apellidos, email, telefono,
+      rol, empresa_id, password, activo,
+      horaInicio, horaSalida,
+      turnoPartido, horaInicio2, horaSalida2
+    } = req.body;
+
+    // 1) Validar campos básicos
+    if (!nombre || !email || !rol || !empresa_id || !horaInicio || !horaSalida) {
+      res.status(400).json({ message: 'Faltan campos obligatorios' });
+      return;
+    }
+
+    // 2) Validar formato HH:MM
+    const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!timeRe.test(horaInicio) || !timeRe.test(horaSalida)) {
+      res.status(400).json({ message: 'Formato de horaInicio/horaSalida inválido' });
+      return;
+    }
+
+    // 3) Si hay turno partido, validar sus horas
+    if (turnoPartido) {
+      if (!horaInicio2 || !horaSalida2) {
+        res.status(400).json({ message: 'Faltan horas del segundo turno' });
+        return;
+      }
+      if (!timeRe.test(horaInicio2) || !timeRe.test(horaSalida2)) {
+        res.status(400).json({ message: 'Formato de horaInicio2/horaSalida2 inválido' });
+        return;
+      }
+    }
+
+    // 4) Validar teléfono a 9 dígitos
+    if (telefono && !/^\d{9}$/.test(telefono)) {
+      res.status(400).json({ message: 'Teléfono debe tener 9 dígitos' });
+      return;
+    }
+
+    try {
+      // 5) Hash de contraseña
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(password, salt);
+
+      // 6) Construir dinámicamente el UPDATE
+      const sets: string[] = [
+        'empresa_id    = ?',
+        'nombre        = ?',
+        'apellidos     = ?',
+        'email         = ?',
+        'telefono      = ?',
+        'password_hash = ?',
+        'rol           = ?',
+        'activo        = ?',
+        'hora_inicio_1 = ?',
+        'hora_fin_1    = ?'
+      ];
+      const params: any[] = [
+        empresa_id,
+        nombre,
+        apellidos || null,
+        email,
+        telefono || null,
+        hash,
+        rol,
+        activo ? 1 : 0,
+        horaInicio,
+        horaSalida
+      ];
+
+      if (turnoPartido) {
+        sets.push('hora_inicio_2 = ?', 'hora_fin_2 = ?');
+        params.push(horaInicio2, horaSalida2);
+      } else {
+        sets.push('hora_inicio_2 = NULL', 'hora_fin_2 = NULL');
+      }
+
+      sets.push('updated_at = NOW()');
+      params.push(req.params.id);
+
+      const sql = `
+        UPDATE usuarios
+           SET ${sets.join(',\n               ')}
+         WHERE id = ?
+      `;
+
+      await db.query<ResultSetHeader>(sql, params);
+
+      // 7) Responder con el usuario actualizado
+      res.json({
+        id: Number(req.params.id),
+        nombre,
+        apellidos: apellidos || null,
+        email,
+        telefono: telefono || null,
+        rol,
+        empresa_id,
+        activo,
+        horario: {
+          inicio1: horaInicio,
+          fin1:   horaSalida,
+          ...(turnoPartido
+            ? { inicio2: horaInicio2, fin2: horaSalida2 }
+            : {})
+        }
+      });
     } catch (err) {
       next(err);
     }

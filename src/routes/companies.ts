@@ -85,6 +85,33 @@ router.post(
   }
 );
 
+// Actualizar una empresa por ID
+router.put(
+  '/empresas/:id',
+  async (req, res, next) => {
+    try {
+      const { nombre, razon_social, nif_cif, direccion, email_contacto, telefono } = req.body;
+      await db.query(
+        `UPDATE empresas
+           SET nombre=?, razon_social=?, nif_cif=?, direccion=?, email_contacto=?, telefono=?, updated_at=NOW()
+         WHERE id=?`,
+        [nombre, razon_social, nif_cif, direccion, email_contacto, telefono, req.params.id]
+      );
+      // Ahora recupero la empresa completa con el user_count
+      const [rows] = await db.query<RowDataPacket[]>(
+        `SELECT e.*,
+                (SELECT COUNT(*) FROM usuarios u WHERE u.empresa_id = e.id) AS user_count
+           FROM empresas e
+          WHERE e.id = ?`,
+        [req.params.id]
+      );
+      res.json(rows[0]);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 
 //Obtener todas las empresas
 router.get(
