@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import fileUpload from 'express-fileupload';
 import bcrypt from 'bcrypt';
 import db from './db';
 import productosRouter from './routes/productos';
@@ -15,6 +16,7 @@ import userRouter from './routes/user'
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
+
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -22,6 +24,8 @@ app.use(cors({
   origin: 'http://localhost:4200',
   credentials: true
 }));
+app.use(fileUpload());
+app.use('/uploads', express.static('uploads')); // para servir las imágenes
 
 // Endpoints
 app.use('/auth', authRouter);
@@ -30,6 +34,8 @@ app.use('/company', companiesRouter )
 app.use('/user', userRouter )
 app.use('/api/tareas',verifyToken, tareasRoutes)
 app.use('/productos', productosRouter);
+app.use('/uploads', express.static('uploads'));
+
 // Health check
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API is running' });
