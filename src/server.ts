@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import fileUpload from 'express-fileupload';
+//import fileUpload from 'express-fileupload';
 import bcrypt from 'bcrypt';
 import db from './db';
 import productosRouter from './routes/productos';
@@ -13,6 +13,7 @@ import jornadasRouter from './routes/jornadas';
 import authRouter from './routes/auth';
 import companiesRouter from './routes/companies'
 import userRouter from './routes/user'
+import metricasRouter from './routes/metricas';
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
@@ -24,7 +25,7 @@ app.use(cors({
   origin: 'http://localhost:4200',
   credentials: true
 }));
-app.use(fileUpload());
+//app.use(fileUpload());
 app.use('/uploads', express.static('uploads')); // para servir las imágenes
 
 // Endpoints
@@ -34,7 +35,7 @@ app.use('/company', companiesRouter )
 app.use('/user', userRouter )
 app.use('/api/tareas',verifyToken, tareasRoutes)
 app.use('/productos', productosRouter);
-app.use('/uploads', express.static('uploads'));
+app.use('/metricas', metricasRouter)
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
