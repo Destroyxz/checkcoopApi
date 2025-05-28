@@ -1,3 +1,10 @@
+/*
+Este componente gestiona el login de usuarios: verifica las credenciales recibidas (email y contraseña),
+comprueba si el usuario está activo, y si todo es correcto, genera y devuelve un token JWT junto con
+los datos básicos del usuario.
+*/
+
+//Importamos las interfaces necesarias de los modulos
 import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -102,46 +109,6 @@ router.post(
   }
 );
 
-// POST /auth/register: crea un nuevo usuario
-/*router.post(
-  '/register',
-  async (
-    req: Request<{}, {}, { username: string; surname: string; email: string; password: string }>,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    const { username, surname, email, password } = req.body;
 
-    if (!username || !surname || !email || !password) {
-      res.status(400).json({ message: 'Todos los campos son obligatorios' });
-      return;
-    }
-
-    try {
-      // Verificar si ya existe un usuario con ese email
-      const [existing] = await db.execute(
-        'SELECT id FROM usuarios WHERE email = ?',
-        [email]
-      );
-      if ((existing as any[]).length > 0) {
-        res.status(409).json({ message: 'El correo ya está registrado' });
-        return;
-      }
-
-      // Hashear la contraseña
-      const password_hash = await bcrypt.hash(password, 10);
-
-      // Insertar nuevo usuario (activo por defecto en 1)
-      await db.execute(
-        'INSERT INTO usuarios (empresa_id, nombre, apellidos, email, password_hash, rol, activo) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [1, username, surname, email, password_hash, 'usuario', 1]
-      );
-      
-      res.status(201).json({ message: 'Usuario registrado correctamente' });
-    } catch (err) {
-      next(err);
-    }
-  }
-);*/
 
 export default router;

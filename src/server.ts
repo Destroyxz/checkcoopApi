@@ -2,9 +2,6 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-//import fileUpload from 'express-fileupload';
-import bcrypt from 'bcrypt';
-import db from './db';
 import productosRouter from './routes/productos';
 import tareasRoutes from './routes/tareas';
 
@@ -25,19 +22,20 @@ app.use(cors({
   origin: 'http://localhost:4200',
   credentials: true
 }));
-//app.use(fileUpload());
-app.use('/uploads', express.static('uploads')); // para servir las imágenes
+
+//Para subir imagenes
+app.use('/uploads', express.static('uploads')); 
 
 // Endpoints
 app.use('/auth', authRouter);
-app.use('/jornadas',  verifyToken, jornadasRouter); // 🔓 sin protección
+app.use('/jornadas',  verifyToken, jornadasRouter); 
 app.use('/company', companiesRouter )
 app.use('/user', userRouter )
 app.use('/api/tareas',verifyToken, tareasRoutes)
 app.use('/productos', productosRouter);
 app.use('/metricas', metricasRouter)
 
-// Health check
+// Para comprobar que todo funciona correctamente
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API is running' });
 });

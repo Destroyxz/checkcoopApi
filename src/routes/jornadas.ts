@@ -1,3 +1,7 @@
+/*Componente que permite iniciar tramos y jornadas, modificarlas
+detenerlas, obtener datos y eliminarlas.  */
+
+//Importamos las interfaces necesarias de los modulos
 import { Router, Request, Response } from 'express';
 import db from '../db';
 import { RowDataPacket } from 'mysql2';
@@ -33,6 +37,7 @@ router.post('/iniciar', async (req: Request, res: Response) => {
       [jornadaId]
     );
 
+    //Mensaje de error si hay tramos activos
     if (tramoAbierto.length > 0) {
       res.status(400).json({ error: 'Ya tienes un tramo activo. Finalízalo antes.' });
       return;
@@ -54,7 +59,7 @@ router.post('/iniciar', async (req: Request, res: Response) => {
 // Finalizar tramo activo
 router.put('/finalizar', async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const userId = user.id; // Cambiado a user.id
+  const userId = user.id; 
 
   try {
     const [tramoRows] = await db.query<RowDataPacket[]>(

@@ -1,3 +1,5 @@
+/*Componente que permite editar perfiles*/
+//Importamos las interfaces necesarias de los modulos
 import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import path from 'path';

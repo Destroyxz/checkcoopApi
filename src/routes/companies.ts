@@ -1,7 +1,11 @@
+/*
+Este componente permite crear, modificar y eliminar dtos referentes a las empresas
+*/
+
+
+//Importamos las interfaces necesarias de los modulos
 import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import multer from 'multer';
-import path from 'path';
 import db from '../db';
 
 const router = Router();
