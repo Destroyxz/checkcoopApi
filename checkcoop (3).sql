@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 26-05-2025 a las 19:51:37
+-- Tiempo de generación: 30-05-2025 a las 20:54:50
 -- Versión del servidor: 8.0.42-0ubuntu0.22.04.1
 -- Versión de PHP: 8.1.2-1ubuntu2.21
 
@@ -73,13 +73,10 @@ CREATE TABLE `jornadas` (
   `fecha` date NOT NULL,
   `hora_entrada` datetime DEFAULT NULL,
   `hora_salida` datetime DEFAULT NULL,
-  `duracion` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `llego_tarde` tinyint(1) DEFAULT '0',
-  `cumplio_jornada` tinyint(1) DEFAULT '0',
   `total_minutos` int DEFAULT '0',
-  `tipo_id` tinyint DEFAULT NULL,
   `partida` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -87,9 +84,10 @@ CREATE TABLE `jornadas` (
 -- Volcado de datos para la tabla `jornadas`
 --
 
-INSERT INTO `jornadas` (`id`, `usuario_id`, `fecha`, `hora_entrada`, `hora_salida`, `duracion`, `created_at`, `updated_at`, `llego_tarde`, `cumplio_jornada`, `total_minutos`, `tipo_id`, `partida`) VALUES
-(1, 8, '2025-05-19', NULL, NULL, NULL, '2025-05-19 00:30:17', '2025-05-19 00:30:17', 0, 0, 0, NULL, 0),
-(3, 8, '2025-05-24', NULL, NULL, NULL, '2025-05-24 13:01:39', '2025-05-24 13:01:39', 0, 0, 0, NULL, 0);
+INSERT INTO `jornadas` (`id`, `usuario_id`, `fecha`, `hora_entrada`, `hora_salida`, `created_at`, `updated_at`, `llego_tarde`, `total_minutos`, `partida`) VALUES
+(3, 8, '2025-05-24', NULL, NULL, '2025-05-24 13:01:39', '2025-05-24 13:01:39', 0, 0, 0),
+(4, 8, '2025-05-28', NULL, NULL, '2025-05-28 20:31:56', '2025-05-28 20:31:56', 0, 0, 0),
+(5, 8, '2025-05-30', '2025-05-30 18:23:59', '2025-05-30 20:24:04', '2025-05-30 18:23:59', '2025-05-30 20:24:04', 1, 52, 1);
 
 -- --------------------------------------------------------
 
@@ -109,11 +107,21 @@ CREATE TABLE `jornada_tramos` (
 --
 
 INSERT INTO `jornada_tramos` (`id`, `jornada_id`, `hora_inicio`, `hora_fin`) VALUES
-(57, 1, '2025-05-19 00:40:00', '2025-05-31 06:39:00'),
-(58, 1, '2025-05-19 21:02:00', '2025-05-19 21:37:00'),
-(59, 1, '2025-05-19 21:02:00', '2025-05-19 21:37:00'),
-(60, 1, '2025-05-19 21:37:00', '2025-05-19 21:37:00'),
-(62, 3, '2025-05-24 13:01:39', '2025-05-24 13:01:41');
+(62, 3, '2025-05-24 13:01:39', '2025-05-24 13:01:41'),
+(63, 4, '2025-05-28 20:31:58', '2025-05-28 20:31:59'),
+(68, 5, '2025-05-30 18:23:59', '2025-05-30 18:24:03'),
+(69, 5, '2025-05-30 18:24:10', '2025-05-30 18:24:35'),
+(70, 5, '2025-05-30 18:24:55', '2025-05-30 18:24:57'),
+(71, 5, '2025-05-30 18:27:03', '2025-05-30 18:33:10'),
+(72, 5, '2025-05-30 18:33:14', '2025-05-30 18:43:40'),
+(73, 5, '2025-05-30 18:43:54', '2025-05-30 19:20:15'),
+(74, 5, '2025-05-30 19:20:22', '2025-05-30 19:20:24'),
+(75, 5, '2025-05-30 19:21:58', '2025-05-30 19:22:00'),
+(76, 5, '2025-05-30 19:23:01', '2025-05-30 19:23:03'),
+(77, 5, '2025-05-30 20:19:25', '2025-05-30 20:19:27'),
+(78, 5, '2025-05-30 20:19:51', '2025-05-30 20:19:55'),
+(79, 5, '2025-05-30 20:20:25', '2025-05-30 20:20:30'),
+(85, 5, '2025-05-30 20:23:59', '2025-05-30 20:24:04');
 
 -- --------------------------------------------------------
 
@@ -132,7 +140,7 @@ CREATE TABLE `productos` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `precio` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `imagen` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `imagen` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -141,8 +149,7 @@ CREATE TABLE `productos` (
 
 INSERT INTO `productos` (`id`, `numEmpresa`, `nombre`, `descripcion`, `cantidad`, `unidad`, `categoria`, `created_at`, `updated_at`, `precio`, `imagen`) VALUES
 (5, 1, 'aaa', 'buenasg\r\n', 5, 'kg', 'a', '2025-05-20 16:02:14', '2025-05-26 17:21:52', '3.00', '/uploads/Untitled Project(3).jpg'),
-(10, 1, 'a', 'a', 26, 'unidad', 'a', '2025-05-20 17:07:20', '2025-05-26 17:31:05', '2.00', '/uploads/23.jpg'),
-(16, 1, 'a', 'aaa', 0, 'unidad', 'aaaa', '2025-05-26 17:48:13', '2025-05-26 17:48:13', '3.00', '/uploads/1748281693126-Copia_de_Copia_de_plantilla2__6_.png');
+(10, 1, 'a', 'a', 26, 'unidad', 'a', '2025-05-20 17:07:20', '2025-05-26 17:31:05', '2.00', '/uploads/23.jpg');
 
 -- --------------------------------------------------------
 
@@ -155,10 +162,10 @@ CREATE TABLE `tareas` (
   `usuario_id` bigint UNSIGNED NOT NULL,
   `empresa_id` bigint UNSIGNED NOT NULL,
   `fecha` date NOT NULL,
-  `titulo` varchar(255) NOT NULL,
-  `descripcion` text,
-  `estado` enum('pendiente','en progreso','completada','cancelada') DEFAULT 'pendiente',
-  `prioridad` enum('baja','media','alta') DEFAULT 'media',
+  `titulo` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `descripcion` text COLLATE utf8mb4_general_ci,
+  `estado` enum('pendiente','en progreso','completada','cancelada') COLLATE utf8mb4_general_ci DEFAULT 'pendiente',
+  `prioridad` enum('baja','media','alta') COLLATE utf8mb4_general_ci DEFAULT 'media',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -170,7 +177,7 @@ CREATE TABLE `tareas` (
 INSERT INTO `tareas` (`id`, `usuario_id`, `empresa_id`, `fecha`, `titulo`, `descripcion`, `estado`, `prioridad`, `created_at`, `updated_at`) VALUES
 (3, 8, 1, '2025-05-21', 'ada', 'a', 'pendiente', 'media', '2025-05-21 20:11:09', '2025-05-21 20:40:51'),
 (13, 8, 1, '2025-05-20', 'aa', 'a', 'en progreso', 'media', '2025-05-21 21:02:04', '2025-05-21 21:31:17'),
-(17, 6, 1, '2025-05-24', 'ada', 'aa', 'pendiente', 'media', '2025-05-24 13:32:24', '2025-05-24 13:32:50');
+(17, 6, 1, '2025-05-24', 'ada', 'aa', 'completada', 'baja', '2025-05-24 13:32:24', '2025-05-30 20:21:50');
 
 -- --------------------------------------------------------
 
@@ -224,7 +231,7 @@ INSERT INTO `usuarios` (`id`, `empresa_id`, `nombre`, `apellidos`, `email`, `tel
 (1, 1, 'Gabriel', 'Callejón Sánchez', 'gabriel@checkcoop.com', 640967800, '$2b$12$IQdepNoSxKApBT7w3YChn.8gq/7nPpCr8ypDGcKyhK4efAmySVxZC', 'superadmin', 1, NULL, '2025-05-01 11:25:43', '2025-05-17 13:14:08', '09:00:00', '13:00:00', '09:00:00', '13:00:00'),
 (6, 1, 'Francisco', 'Usero', 'fran@checkcoop.com', 123456789, '$2b$10$8xck3i1.IHGkV9oJMPUI4eN6UZUb7dzJMBrxIyk8UcYylPRU52TwO', 'superadmin', 1, NULL, '2025-05-08 19:48:57', '2025-05-17 11:57:01', '09:00:00', '13:00:00', '09:00:00', '13:00:00'),
 (7, 1, 'el Pepe', 'Ete Sech', 'elpepe@checkcoop.com', 123456789, '$2b$10$XNe70TnpbkCANrKeFXvKJ.KxlsIfGcOrUYkIwwIQzjuugrEF694he', 'admin', 1, NULL, '2025-05-17 12:41:16', '2025-05-17 12:41:16', '09:00:00', '13:00:00', '09:00:00', '13:00:00'),
-(8, 1, 'franE', 'Usero', 'franE@checkcoop.com', 640295526, '$2b$10$yrEOZHLzPWY3i71jhLEwd.Oc78unY.QMn/M.PG0Vu3AaGHZOyksFa', 'usuario', 1, NULL, '2025-05-18 21:00:23', '2025-05-18 21:00:23', '09:00:00', '13:00:00', '09:00:00', '13:00:00');
+(8, 1, 'franE', 'Usero', 'franE@checkcoop.com', 640295526, '$2b$10$yrEOZHLzPWY3i71jhLEwd.Oc78unY.QMn/M.PG0Vu3AaGHZOyksFa', 'usuario', 1, NULL, '2025-05-18 21:00:23', '2025-05-30 20:23:46', '09:00:00', '13:00:00', '14:00:00', '17:00:00');
 
 --
 -- Índices para tablas volcadas
@@ -250,8 +257,7 @@ ALTER TABLE `imagenes_perfil`
 --
 ALTER TABLE `jornadas`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_usuario_fecha` (`usuario_id`,`fecha`),
-  ADD KEY `tipo_id` (`tipo_id`);
+  ADD KEY `idx_usuario_fecha` (`usuario_id`,`fecha`);
 
 --
 -- Indices de la tabla `jornada_tramos`
@@ -310,19 +316,19 @@ ALTER TABLE `imagenes_perfil`
 -- AUTO_INCREMENT de la tabla `jornadas`
 --
 ALTER TABLE `jornadas`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `jornada_tramos`
 --
 ALTER TABLE `jornada_tramos`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `tareas`
