@@ -236,17 +236,23 @@ router.get('/hoy', async (req: Request, res: Response) => {
     const llegoTarde = tramos.length > 0 && new Date(tramos[0].hora_inicio).getHours() > parseInt(userHorario.hora_inicio_1.split(':')[0]);
 
     res.json({
-      fecha: new Date().toISOString().slice(0, 10),
-      horasTrabajadas,
-      completa,
-      incompleta: !completa,
-      partida,
-      llegoTarde,
-      tramos: tramos.map((t: any) => ({
-        inicio: t.hora_inicio,
-        fin: t.hora_fin
-      }))
-    });
+  fecha: new Date().toISOString().slice(0, 10),
+  horasTrabajadas,
+  completa,
+  incompleta: !completa,
+  partida,
+  llegoTarde,
+  jornadaPartida: userHorario.hora_inicio_2 !== null && userHorario.hora_fin_2 !== null,
+  hora_inicio_1: userHorario.hora_inicio_1,
+  hora_fin_1: userHorario.hora_fin_1,
+  hora_inicio_2: userHorario.hora_inicio_2,
+  hora_fin_2: userHorario.hora_fin_2,
+  tramos: tramos.map((t: any) => ({
+    inicio: t.hora_inicio,
+    fin: t.hora_fin
+  }))
+});
+
   } catch (err) {
     console.error('Error al obtener jornada de hoy:', err);
     res.status(500).json({ error: 'Error interno' });
