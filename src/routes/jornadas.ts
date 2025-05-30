@@ -14,12 +14,18 @@ function calcularEstadoJornada(tramos: any[], horario: any) {
     return (h2 * 60 + m2) - (h1 * 60 + m1);
   };
 
+  // Detectar jornada partida sólo si tiene horarios válidos distintos de 00:00:00
+  const esJornadaPartida = horario.hora_inicio_2 !== null && horario.hora_fin_2 !== null &&
+                          horario.hora_inicio_2 !== '00:00:00' && horario.hora_fin_2 !== '00:00:00';
+
+  // Calcular minutos esperados sumando solo los horarios asignados (considerando jornada partida)
   let minutosEsperados = 0;
   if (horario.hora_inicio_1 && horario.hora_fin_1)
     minutosEsperados += calcularMinutos(horario.hora_inicio_1, horario.hora_fin_1);
-  if (horario.hora_inicio_2 && horario.hora_fin_2)
+  if (esJornadaPartida)
     minutosEsperados += calcularMinutos(horario.hora_inicio_2, horario.hora_fin_2);
 
+  // Calcular minutos trabajados sumando los tramos completos
   let totalMinutos = 0;
   for (const t of tramos) {
     if (t.hora_fin) {
@@ -29,20 +35,26 @@ function calcularEstadoJornada(tramos: any[], horario: any) {
     }
   }
 
+  // Calcular estados básicos
   const completa = totalMinutos >= minutosEsperados;
   const incompleta = tramos.length === 0 || tramos.some(t => t.hora_fin === null);
-  const partida = tramos.length > 1;
+  
+  // Determinar si llegó tarde comparando la primera entrada con el horario esperado de la mañana
   const llegoTarde = tramos.length > 0 && (() => {
     const ini = new Date(tramos[0].hora_inicio);
     const [h, m] = horario.hora_inicio_1.split(':').map(Number);
     return ini.getHours() > h || (ini.getHours() === h && ini.getMinutes() > m);
   })();
 
+  // El estado para mostrar
   const estado = incompleta
     ? 'Incompleta'
     : completa
-    ? 'Completada'
-    : 'Con retraso';
+      ? 'Completada'
+      : 'Con retraso';
+
+  // Considerar jornada partida sólo si el usuario tiene asignado segundo horario válido
+  const partida = esJornadaPartida;
 
   return {
     completa,
@@ -55,6 +67,7 @@ function calcularEstadoJornada(tramos: any[], horario: any) {
     totalMinutos
   };
 }
+
 
 // Iniciar jornada o nuevo tramo
 router.post('/iniciar', async (req: Request, res: Response) => {
