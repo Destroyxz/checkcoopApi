@@ -256,8 +256,11 @@ router.get('/hoy', async (req: Request, res: Response) => {
 
 // Obtener todas las jornadas con datos del usuario
 router.get('/todas', async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const empresaId = user.empresa_id;
+
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
+       const [rows] = await db.query<RowDataPacket[]>(
       `SELECT
          j.id AS jornada_id,
          j.usuario_id,
@@ -269,8 +272,11 @@ router.get('/todas', async (req: Request, res: Response) => {
          u.hora_fin_2
        FROM jornadas j
        JOIN usuarios u ON j.usuario_id = u.id
-       ORDER BY j.fecha DESC`
+       WHERE u.empresa_id = ?
+       ORDER BY j.fecha DESC`,
+      [empresaId]
     );
+
 
     const resultados = [];
 
