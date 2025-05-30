@@ -27,6 +27,9 @@ SET time_zone = "+00:00";
 -- Estructura de tabla para la tabla `empresas`
 --
 
+CREATE database IF NOT EXISTS `checkcoop` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `checkcoop`;
+
 CREATE TABLE `empresas` (
   `id` bigint UNSIGNED NOT NULL,
   `nombre` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
