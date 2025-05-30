@@ -177,7 +177,13 @@ await db.query(
   ]
 );
 
-    res.json({ mensaje: 'Tramo finalizado y jornada actualizada', jornadaId: tramo.jornada_id });
+    res.json({
+  mensaje: 'Tramo finalizado y jornada actualizada',
+  jornadaId: tramo.jornada_id,
+  horaEntrada: new Date(tramos[0].hora_inicio).toISOString(),
+  horaSalida: new Date(tramos[tramos.length - 1].hora_fin).toISOString()
+});
+
   } catch (err) {
     console.error('Error al finalizar tramo:', err);
     res.status(500).json({ error: 'Error interno' });
@@ -248,15 +254,20 @@ const resultado = calcularEstadoJornada(tramos, userHorario);
 
     res.json({
       fecha: new Date().toISOString().slice(0, 10),
-      jornadaPartida: userHorario.hora_inicio_2 !== null && userHorario.hora_fin_2 !== null,
+   jornadaPartida:
+  userHorario.hora_inicio_2 !== null &&
+  userHorario.hora_fin_2 !== null &&
+  userHorario.hora_inicio_2 !== '00:00:00' &&
+  userHorario.hora_fin_2 !== '00:00:00',
+
       hora_inicio_1: userHorario.hora_inicio_1,
       hora_fin_1: userHorario.hora_fin_1,
       hora_inicio_2: userHorario.hora_inicio_2,
       hora_fin_2: userHorario.hora_fin_2,
       tramos: tramos.map((t: any) => ({
-        inicio: t.hora_inicio,
-        fin: t.hora_fin
-      })),
+  inicio: new Date(t.hora_inicio).toISOString(),
+  fin: t.hora_fin ? new Date(t.hora_fin).toISOString() : null
+})),
       ...resultado 
     });
 
@@ -307,8 +318,9 @@ resultados.push({
   usuario_id: jornada.usuario_id,
   nombre: jornada.nombre,
   fecha: jornada.fecha,
-  hora_entrada: tramos[0]?.hora_inicio || null,
-  hora_salida: tramos[tramos.length - 1]?.hora_fin || null,
+hora_entrada: tramos[0]?.hora_inicio ? new Date(tramos[0].hora_inicio).toISOString() : null,
+hora_salida: tramos[tramos.length - 1]?.hora_fin ? new Date(tramos[tramos.length - 1].hora_fin).toISOString() : null,
+
   tipo_jornada: resultado.partida ? 'Partida' : 'Normal',
   estado: resultado.estado
 });
