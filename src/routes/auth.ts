@@ -75,33 +75,37 @@ router.post(
         return;
       }
 
+      // Actualizar last_login a la hora actual
+      await db.execute(
+        'UPDATE usuarios SET last_login = NOW() WHERE id = ?',
+        [user.id]
+      );
+
       // Generar el token JWT
       const payload = {
-      id: user.id,
-      empresa_id: user.empresa_id,
-      nombre: user.nombre,
-      apellidos: user.apellidos,
-      email: user.email,
-      rol: user.rol,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora
-};
-
-      const token = jwt.sign(payload, JWT_SECRET);  // Generar el token JWT
+        id: user.id,
+        empresa_id: user.empresa_id,
+        nombre: user.nombre,
+        apellidos: user.apellidos,
+        email: user.email,
+        rol: user.rol,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hora
+      };
+      const token = jwt.sign(payload, JWT_SECRET);
 
       // Responder con el token y los datos del usuario (sin el hash)
-     res.json({
-  token,
-  user: {
-    id: user.id,
-    empresa_id: user.empresa_id,
-    nombre: user.nombre,
-    apellidos: user.apellidos,
-    email: user.email,
-    rol: user.rol,
-
-  }
-});
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          empresa_id: user.empresa_id,
+          nombre: user.nombre,
+          apellidos: user.apellidos,
+          email: user.email,
+          rol: user.rol,
+        }
+      });
 
     } catch (err) {
       next(err);
