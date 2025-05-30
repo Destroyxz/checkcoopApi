@@ -1,3 +1,4 @@
+// Importamos los archivos necesarios
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
