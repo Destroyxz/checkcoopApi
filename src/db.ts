@@ -1,3 +1,5 @@
+//Importamos los paquetes necesarios desde mysql2/promise
+//Este archivo se encarga de la comunicacion con el servidor de la base de datos
 import mysql, { Pool } from 'mysql2/promise';
 
 declare const process: {
