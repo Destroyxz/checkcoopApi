@@ -7,6 +7,54 @@ import db from '../db';
 import { RowDataPacket } from 'mysql2';
 
 const router = Router();
+function calcularEstadoJornada(tramos: any[], horario: any) {
+  const calcularMinutos = (ini: string, fin: string) => {
+    const [h1, m1] = ini.split(':').map(Number);
+    const [h2, m2] = fin.split(':').map(Number);
+    return (h2 * 60 + m2) - (h1 * 60 + m1);
+  };
+
+  let minutosEsperados = 0;
+  if (horario.hora_inicio_1 && horario.hora_fin_1)
+    minutosEsperados += calcularMinutos(horario.hora_inicio_1, horario.hora_fin_1);
+  if (horario.hora_inicio_2 && horario.hora_fin_2)
+    minutosEsperados += calcularMinutos(horario.hora_inicio_2, horario.hora_fin_2);
+
+  let totalMinutos = 0;
+  for (const t of tramos) {
+    if (t.hora_fin) {
+      const ini = new Date(t.hora_inicio);
+      const fin = new Date(t.hora_fin);
+      totalMinutos += Math.floor((fin.getTime() - ini.getTime()) / 60000);
+    }
+  }
+
+  const completa = totalMinutos >= minutosEsperados;
+  const incompleta = tramos.length === 0 || tramos.some(t => t.hora_fin === null);
+  const partida = tramos.length > 1;
+  const llegoTarde = tramos.length > 0 && (() => {
+    const ini = new Date(tramos[0].hora_inicio);
+    const [h, m] = horario.hora_inicio_1.split(':').map(Number);
+    return ini.getHours() > h || (ini.getHours() === h && ini.getMinutes() > m);
+  })();
+
+  const estado = incompleta
+    ? 'Incompleta'
+    : completa
+    ? 'Completada'
+    : 'Con retraso';
+
+  return {
+    completa,
+    incompleta,
+    partida,
+    llegoTarde,
+    estado,
+    horasTrabajadas: parseFloat((totalMinutos / 60).toFixed(2)),
+    minutosEsperados,
+    totalMinutos
+  };
+}
 
 // Iniciar jornada o nuevo tramo
 router.post('/iniciar', async (req: Request, res: Response) => {
@@ -93,50 +141,28 @@ router.put('/finalizar', async (req: Request, res: Response) => {
     );
     const horario = usuarioRows[0];
 
-    const calcularMinutos = (ini: string, fin: string) => {
-      const [h1, m1] = ini.split(':').map(Number);
-      const [h2, m2] = fin.split(':').map(Number);
-      return (h2 * 60 + m2) - (h1 * 60 + m1);
-    };
+   
+const resultado = calcularEstadoJornada(tramos, horario);
 
-    let esperados = 0;
-    if (horario.hora_inicio_1 && horario.hora_fin_1)
-      esperados += calcularMinutos(horario.hora_inicio_1, horario.hora_fin_1);
-    if (horario.hora_inicio_2 && horario.hora_fin_2)
-      esperados += calcularMinutos(horario.hora_inicio_2, horario.hora_fin_2);
-
-    let totalMin = 0;
-    for (const t of tramos) {
-      if (t.hora_fin) {
-        const ini = new Date(t.hora_inicio);
-        const fin = new Date(t.hora_fin);
-        totalMin += Math.floor((fin.getTime() - ini.getTime()) / 60000);
-      }
-    }
-
-    const completa = totalMin >= esperados;
-    const partida = tramos.length > 1;
-    const llegoTarde = tramos.length > 0 && new Date(tramos[0].hora_inicio).getHours() > parseInt(horario.hora_inicio_1.split(':')[0]);
-
-    await db.query(
-      `UPDATE jornadas SET 
-        hora_entrada = ?, 
-        hora_salida = ?, 
-        total_minutos = ?, 
-        cumplio_jornada = ?, 
-        llego_tarde = ?, 
-        partida = ? 
-       WHERE id = ?`,
-      [
-        tramos[0]?.hora_inicio || null,
-        tramos[tramos.length - 1]?.hora_fin || null,
-        totalMin,
-        completa ? 1 : 0,
-        llegoTarde ? 1 : 0,
-        partida ? 1 : 0,
-        tramo.jornada_id
-      ]
-    );
+await db.query(
+  `UPDATE jornadas SET 
+    hora_entrada = ?, 
+    hora_salida = ?, 
+    total_minutos = ?, 
+    cumplio_jornada = ?, 
+    llego_tarde = ?, 
+    partida = ? 
+   WHERE id = ?`,
+  [
+    tramos[0]?.hora_inicio || null,
+    tramos[tramos.length - 1]?.hora_fin || null,
+    resultado.totalMinutos,
+    resultado.completa ? 1 : 0,
+    resultado.llegoTarde ? 1 : 0,
+    resultado.partida ? 1 : 0,
+    tramo.jornada_id
+  ]
+);
 
     res.json({ mensaje: 'Tramo finalizado y jornada actualizada', jornadaId: tramo.jornada_id });
   } catch (err) {
@@ -204,54 +230,22 @@ router.get('/hoy', async (req: Request, res: Response) => {
     );
 
     const userHorario = usuarioRows[0];
+const resultado = calcularEstadoJornada(tramos, userHorario);
 
-    // Calcula los minutos esperados según el horario
-    const calcularMinutos = (ini: string, fin: string) => {
-      const [h1, m1] = ini.split(':').map(Number);
-      const [h2, m2] = fin.split(':').map(Number);
-      return (h2 * 60 + m2) - (h1 * 60 + m1);
-    };
-
-    let minutosEsperados = 0;
-    if (userHorario.hora_inicio_1 && userHorario.hora_fin_1) {
-      minutosEsperados += calcularMinutos(userHorario.hora_inicio_1, userHorario.hora_fin_1);
-    }
-    if (userHorario.hora_inicio_2 && userHorario.hora_fin_2) {
-      minutosEsperados += calcularMinutos(userHorario.hora_inicio_2, userHorario.hora_fin_2);
-    }
-
-    // Total de minutos reales trabajados
-    let totalMinutos = 0;
-    for (const t of tramos) {
-      if (t.hora_fin) {
-        const inicio = new Date(t.hora_inicio);
-        const fin = new Date(t.hora_fin);
-        totalMinutos += Math.floor((fin.getTime() - inicio.getTime()) / 60000);
-      }
-    }
-
-    const horasTrabajadas = parseFloat((totalMinutos / 60).toFixed(2));
-    const completa = totalMinutos >= minutosEsperados;
-    const partida = tramos.length > 1;
-    const llegoTarde = tramos.length > 0 && new Date(tramos[0].hora_inicio).getHours() > parseInt(userHorario.hora_inicio_1.split(':')[0]);
 
     res.json({
-  fecha: new Date().toISOString().slice(0, 10),
-  horasTrabajadas,
-  completa,
-  incompleta: !completa,
-  partida,
-  llegoTarde,
-  jornadaPartida: userHorario.hora_inicio_2 !== null && userHorario.hora_fin_2 !== null,
-  hora_inicio_1: userHorario.hora_inicio_1,
-  hora_fin_1: userHorario.hora_fin_1,
-  hora_inicio_2: userHorario.hora_inicio_2,
-  hora_fin_2: userHorario.hora_fin_2,
-  tramos: tramos.map((t: any) => ({
-    inicio: t.hora_inicio,
-    fin: t.hora_fin
-  }))
-});
+      fecha: new Date().toISOString().slice(0, 10),
+      jornadaPartida: userHorario.hora_inicio_2 !== null && userHorario.hora_fin_2 !== null,
+      hora_inicio_1: userHorario.hora_inicio_1,
+      hora_fin_1: userHorario.hora_fin_1,
+      hora_inicio_2: userHorario.hora_inicio_2,
+      hora_fin_2: userHorario.hora_fin_2,
+      tramos: tramos.map((t: any) => ({
+        inicio: t.hora_inicio,
+        fin: t.hora_fin
+      })),
+      ...resultado 
+    });
 
   } catch (err) {
     console.error('Error al obtener jornada de hoy:', err);
@@ -293,52 +287,19 @@ router.get('/todas', async (req: Request, res: Response) => {
         [jornada.jornada_id]
       );
 
-      // Calcular minutos esperados según el horario del usuario
-      const calcularMinutos = (ini: string, fin: string) => {
-        const [h1, m1] = ini.split(':').map(Number);
-        const [h2, m2] = fin.split(':').map(Number);
-        return (h2 * 60 + m2) - (h1 * 60 + m1);
-      };
+     const resultado = calcularEstadoJornada(tramos, jornada);
 
-      let minutosEsperados = 0;
-      if (jornada.hora_inicio_1 && jornada.hora_fin_1) {
-        minutosEsperados += calcularMinutos(jornada.hora_inicio_1, jornada.hora_fin_1);
-      }
-      if (jornada.hora_inicio_2 && jornada.hora_fin_2) {
-        minutosEsperados += calcularMinutos(jornada.hora_inicio_2, jornada.hora_fin_2);
-      }
+resultados.push({
+  id: jornada.jornada_id,
+  usuario_id: jornada.usuario_id,
+  nombre: jornada.nombre,
+  fecha: jornada.fecha,
+  hora_entrada: tramos[0]?.hora_inicio || null,
+  hora_salida: tramos[tramos.length - 1]?.hora_fin || null,
+  tipo_jornada: resultado.partida ? 'Partida' : 'Normal',
+  estado: resultado.estado
+});
 
-      // Calcular minutos reales trabajados
-      let totalMinutos = 0;
-      for (const t of tramos) {
-        if (t.hora_fin) {
-          const inicio = new Date(t.hora_inicio);
-          const fin = new Date(t.hora_fin);
-          totalMinutos += Math.floor((fin.getTime() - inicio.getTime()) / 60000);
-        }
-      }
-
-      const completa = totalMinutos >= minutosEsperados;
-      const partida = tramos.length > 1;
-      const incompleta = tramos.length === 0 || tramos.some(t => t.hora_fin === null);
-      const llegoTarde = tramos.length > 0 && new Date(tramos[0].hora_inicio).getHours() > parseInt(jornada.hora_inicio_1.split(':')[0]);
-
-      const estado = incompleta
-        ? 'Incompleta'
-        : completa
-        ? 'Completada'
-        : 'Con retraso';
-
-      resultados.push({
-        id: jornada.jornada_id,
-        usuario_id: jornada.usuario_id,
-        nombre: jornada.nombre,
-        fecha: jornada.fecha,
-        hora_entrada: tramos[0]?.hora_inicio || null,
-        hora_salida: tramos[tramos.length - 1]?.hora_fin || null,
-        tipo_jornada: partida ? 'Partida' : 'Normal',
-        estado
-      });
     }
 
     res.json(resultados);
@@ -382,7 +343,46 @@ if (!Array.isArray(tramos) || tramos.length === 0) {
       );
     }
 
-    res.json({ mensaje: 'Tramos actualizados correctamente' });
+    // Volver a obtener los tramos recién guardados
+const [tramosActualizados] = await db.query<RowDataPacket[]>(
+  'SELECT hora_inicio, hora_fin FROM jornada_tramos WHERE jornada_id = ? ORDER BY hora_inicio',
+  [jornadaId]
+);
+
+// Obtener horario del usuario (relacionado a la jornada)
+const [horarioRows] = await db.query<RowDataPacket[]>(
+  `SELECT u.hora_inicio_1, u.hora_fin_1, u.hora_inicio_2, u.hora_fin_2
+   FROM usuarios u
+   JOIN jornadas j ON j.usuario_id = u.id
+   WHERE j.id = ?`,
+  [jornadaId]
+);
+const horario = horarioRows[0];
+const resultado = calcularEstadoJornada(tramosActualizados, horario);
+
+// Actualizar jornada con los datos recalculados
+await db.query(
+  `UPDATE jornadas SET 
+    hora_entrada = ?, 
+    hora_salida = ?, 
+    total_minutos = ?, 
+    cumplio_jornada = ?, 
+    llego_tarde = ?, 
+    partida = ? 
+   WHERE id = ?`,
+  [
+    tramosActualizados[0]?.hora_inicio || null,
+    tramosActualizados[tramosActualizados.length - 1]?.hora_fin || null,
+    resultado.totalMinutos,
+    resultado.completa ? 1 : 0,
+    resultado.llegoTarde ? 1 : 0,
+    resultado.partida ? 1 : 0,
+    jornadaId
+  ]
+);
+
+res.json({ mensaje: 'Tramos actualizados y jornada recalculada correctamente' });
+
   } catch (err) {
     console.error('Error actualizando tramos:', err);
     res.status(500).json({ error: 'Error al actualizar tramos' });
