@@ -9,6 +9,7 @@ const router = Router();
 type CountResult = { total: number };
 router.get(
   '/users/total',
+
   async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const [[{ total_users }]] = await db.query<RowDataPacket[][]>(
@@ -23,10 +24,12 @@ router.get(
 
 // Usuarios activos (al menos 1 jornada en el rango)
 router.get(
-  '/users/active',
+  '/users/active',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to } = req.query as { from: string; to: string };
+  
+
       const [rows] = await db.query<RowDataPacket[]>(
         `SELECT COUNT(DISTINCT usuario_id) AS active_users
          FROM jornadas
@@ -69,7 +72,7 @@ router.get(
 
 // Logins por periodo
 router.get(
-  '/users/last-login',
+  '/users/last-login',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -109,7 +112,7 @@ router.get(
 );
 
 router.get(
-  '/companies/new',
+  '/companies/new',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -135,10 +138,11 @@ router.get(
 
 // --- Jornadas ---
 router.get(
-  '/jornadas/average-duration',
+  '/jornadas/average-duration',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to } = req.query as { from: string; to: string };
+       
       const [[{ average_duration }]] = await db.query<RowDataPacket[][]>(
         `SELECT AVG(total_minutos) AS average_duration
          FROM jornadas
@@ -153,7 +157,7 @@ router.get(
 );
 
 router.get(
-  '/jornadas/late-rate',
+  '/jornadas/late-rate',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -165,7 +169,8 @@ router.get(
       const dateFmt = formatMap[group_by] || formatMap.day;
       const [rows] = await db.query<RowDataPacket[]>(
         `SELECT DATE_FORMAT(fecha, '${dateFmt}') AS period,
-                SUM(llego_tarde = 1) * 100.0 / COUNT(*) AS late_rate
+             SUM(llego_tarde = 1) * 100.0 / NULLIF(COUNT(*), 0) AS late_rate
+
          FROM jornadas
          WHERE fecha BETWEEN ? AND ?
          GROUP BY period`,
@@ -179,7 +184,7 @@ router.get(
 );
 
 router.get(
-  '/jornadas/compliance-rate',
+  '/jornadas/compliance-rate',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -205,7 +210,7 @@ router.get(
 );
 
 router.get(
-  '/jornadas/total-minutes',
+  '/jornadas/total-minutes',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -232,10 +237,12 @@ router.get(
 
 // Media de tramos por jornada
 router.get(
-  '/jornadas/tramos/average-count',
+  '/jornadas/tramos/average-count',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to } = req.query as { from: string; to: string };
+      
+    
       const [[{ average_count }]] = await db.query<RowDataPacket[][]>(
         `SELECT AVG(count_tramos) AS average_count FROM (
            SELECT COUNT(*) AS count_tramos
@@ -255,7 +262,7 @@ router.get(
 
 // Distribución de duración de tramos en buckets de 15 min
 router.get(
-  '/jornadas/tramos/duration-distribution',
+  '/jornadas/tramos/duration-distribution',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -322,6 +329,14 @@ router.get(
   }
 );
 
+function validateDateRange(req: Request, res: Response, next: NextFunction) {
+  const { from, to } = req.query;
+  if (!from || !to) {
+  res.status(400).json({ error: 'Parámetros "from" y "to" son requeridos.' });
+     return;
+  }
+  next();
+}
 export default router;
 
 

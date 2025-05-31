@@ -1,3 +1,4 @@
+//Importaciones necesarias
 import { Router, Request, Response, NextFunction } from 'express';
 import db from '../db';
 import bcrypt from 'bcryptjs';
@@ -38,7 +39,7 @@ interface UserUpdate {
 }
 
 
-// 1) Crear usuario 
+//Crear usuario 
 router.post(
   '/newUser',
   async (
@@ -241,7 +242,7 @@ router.delete(
     }
   }
 );
-
+// Actualizar usuario
 router.put<{ id: string }, any, UserUpdate>(
   '/usuarios/:id',
   async (

@@ -1,3 +1,4 @@
+/*Importamos los componentes necesarios*/ 
 import { Router } from 'express';
 import db from '../db';
 import path from 'path';
@@ -6,7 +7,7 @@ import fs from 'fs';
 
 const router = Router();
 
-// 🧪 Parámetros de validación
+// Parámetros de validación
 const EXTENSIONES_VALIDAS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 const MAX_TAMANO_IMAGEN = 2 * 1024 * 1024; // 2MB
 
@@ -34,7 +35,7 @@ function guardarImagen(file: UploadedFile): Promise<string> {
   });
 }
 
-// ✅ GET productos
+//Obtener todos los productos
 router.get('/', async (req, res) => {
   try {
     const [rows]: any = await db.query('SELECT * FROM productos');
@@ -45,7 +46,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ POST producto nuevo
+//Crear un nuevo producto
 router.post('/', async (req, res) => {
   const { numEmpresa, nombre, descripcion, cantidad, unidad, categoria, precio } = req.body;
   const file = req.files?.imagen;
@@ -86,7 +87,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ PUT actualizar producto
+//Actualizar un producto
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { numEmpresa, nombre, descripcion, cantidad, unidad, categoria, precio } = req.body;
@@ -130,7 +131,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ✅ DELETE producto
+//Eliminar un producto
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 

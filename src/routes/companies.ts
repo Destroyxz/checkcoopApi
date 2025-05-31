@@ -10,14 +10,14 @@ import db from '../db';
 
 const router = Router();
 
-interface company{
-    nombre: string,
-    razon_social: string,
-    cif: string,
-    telefono: string,
-    direccion: string,
-    email: string,
-    numero: number,
+interface company {
+  nombre: string,
+  razon_social: string,
+  cif: string,
+  telefono: string,
+  direccion: string,
+  email: string,
+  numero: number,
 }
 
 router.get('/allcompanies', async (req, res) => {
@@ -62,7 +62,7 @@ router.post(
       const [result] = await db.query<ResultSetHeader>(
         `INSERT INTO empresas
           (nombre, razon_social, nif_cif, direccion, email_contacto, telefono)
-         VALUES (?, ?, ?, ?, ?, ?)`, 
+         VALUES (?, ?, ?, ?, ?, ?)`,
         [
           nombre,
           razon_social,
