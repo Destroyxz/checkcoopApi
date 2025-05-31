@@ -46,7 +46,7 @@ router.get(
 // Usuarios nuevos agrupados por periodo
 type PeriodCount = { period: string; new_users: number };
 router.get(
-  '/users/new',
+  '/users/new',validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
@@ -184,26 +184,44 @@ router.get(
 );
 
 router.get(
-  '/jornadas/compliance-rate',validateDateRange,
+  '/jornadas/compliance-rate', validateDateRange,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { from, to, group_by = 'day' } = req.query as { from: string; to: string; group_by?: string };
+      
       const formatMap: Record<string, string> = {
         day: '%Y-%m-%d',
         week: '%x-%v',
         month: '%Y-%m-01'
       };
       const dateFmt = formatMap[group_by] || formatMap.day;
+
       const [rows] = await db.query<RowDataPacket[]>(
-        `SELECT DATE_FORMAT(fecha, '${dateFmt}') AS period,
-                SUM(cumplio_jornada = 1) * 100.0 / COUNT(*) AS compliance_rate
-         FROM jornadas
-         WHERE fecha BETWEEN ? AND ?
-         GROUP BY period`,
+        `
+        SELECT 
+          DATE_FORMAT(j.fecha, '${dateFmt}') AS period,
+          SUM(
+            j.total_minutos >= 
+            (
+              TIME_TO_SEC(TIMEDIFF(u.hora_fin_1, u.hora_inicio_1)) / 60 +
+              IF(
+                u.hora_inicio_2 IS NOT NULL AND u.hora_fin_2 IS NOT NULL AND u.hora_inicio_2 != '00:00:00' AND u.hora_fin_2 != '00:00:00',
+                TIME_TO_SEC(TIMEDIFF(u.hora_fin_2, u.hora_inicio_2)) / 60,
+                0
+              )
+            )
+          ) * 100.0 / COUNT(*) AS compliance_rate
+        FROM jornadas j
+        JOIN usuarios u ON j.usuario_id = u.id
+        WHERE j.fecha BETWEEN ? AND ?
+        GROUP BY period
+        `,
         [from, to]
       );
+
       res.json(rows);
     } catch (err) {
+      console.error('Error en compliance-rate:', err);
       next(err);
     }
   }
@@ -331,12 +349,17 @@ router.get(
 
 function validateDateRange(req: Request, res: Response, next: NextFunction) {
   const { from, to } = req.query;
-  if (!from || !to) {
-  res.status(400).json({ error: 'Parámetros "from" y "to" son requeridos.' });
-     return;
+
+  const isValidDate = (d: any) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+
+  if (!isValidDate(from) || !isValidDate(to)) {
+    res.status(400).json({ error: 'Formato de fecha inválido. Usa YYYY-MM-DD' });
+    return ;
   }
+
   next();
 }
+
 export default router;
 
 
