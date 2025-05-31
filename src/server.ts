@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import productosRouter from './routes/productos';
 import tareasRoutes from './routes/tareas';
+import fileUpload from 'express-fileupload';
 
 import verifyToken from './middleware/verifytoken';
 import jornadasRouter from './routes/jornadas';
@@ -26,7 +27,7 @@ app.use(cors({
 
 //Para subir imagenes
 app.use('/uploads', express.static('uploads')); 
-
+app.use(fileUpload());
 // Endpoints
 app.use('/auth', authRouter);
 app.use('/jornadas',  verifyToken, jornadasRouter); 
