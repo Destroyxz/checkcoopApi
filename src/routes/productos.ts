@@ -1,11 +1,13 @@
-/*Importamos los componentes necesarios*/ 
-import { Router } from 'express';
+// Importamos los componentes necesarios
+import { Router, Request, Response } from 'express';
 import db from '../db';
 import path from 'path';
 import { UploadedFile } from 'express-fileupload';
 import fs from 'fs';
+import verifyToken from '../middleware/verifytoken';
 
 const router = Router();
+router.use(verifyToken); // Proteger todas las rutas con JWT
 
 // Parámetros de validación
 const EXTENSIONES_VALIDAS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
@@ -35,10 +37,23 @@ function guardarImagen(file: UploadedFile): Promise<string> {
   });
 }
 
-//Obtener todos los productos
-router.get('/', async (req, res) => {
+// Obtener todos los productos (filtrados por empresa si no es superadmin)
+router.get('/', async (req: Request, res: Response) => {
+  const user = (req as any).user;
   try {
-    const [rows]: any = await db.query('SELECT * FROM productos');
+    let query = `
+      SELECT p.*, e.nombre AS empresa
+      FROM productos p
+      LEFT JOIN empresas e ON p.numEmpresa = e.id
+    `;
+    const params: any[] = [];
+
+    if (user.rol !== 'superadmin') {
+      query += ' WHERE p.numEmpresa = ?';
+      params.push(user.empresa_id);
+    }
+
+    const [rows]: any = await db.query(query, params);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener productos:', error);
@@ -46,10 +61,14 @@ router.get('/', async (req, res) => {
   }
 });
 
-//Crear un nuevo producto
-router.post('/', async (req, res) => {
-  const { numEmpresa, nombre, descripcion, cantidad, unidad, categoria, precio } = req.body;
+
+// Crear un nuevo producto
+router.post('/', async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const { nombre, descripcion, cantidad, unidad, categoria, precio } = req.body;
   const file = req.files?.imagen;
+
+  const numEmpresa = user.rol === 'superadmin' ? req.body.numEmpresa : user.empresa_id;
 
   if (!numEmpresa || !nombre || cantidad == null || !unidad || !categoria || precio == null) {
     res.status(400).json({ error: 'Faltan campos obligatorios' });
@@ -57,20 +76,18 @@ router.post('/', async (req, res) => {
   }
 
   let imagePath = null;
-
   if (file && !Array.isArray(file)) {
     const errorValidacion = validarImagen(file as UploadedFile);
     if (errorValidacion) {
-       res.status(400).json({ error: errorValidacion });
-       return;
+      res.status(400).json({ error: errorValidacion });
+      return;
     }
-
     try {
       imagePath = await guardarImagen(file as UploadedFile);
     } catch (err) {
       console.error('Error al guardar la imagen:', err);
       res.status(500).json({ error: 'Error al guardar la imagen' });
-       return;
+      return;
     }
   }
 
@@ -87,27 +104,28 @@ router.post('/', async (req, res) => {
   }
 });
 
-//Actualizar un producto
-router.put('/:id', async (req, res) => {
+// Actualizar un producto
+router.put('/:id', async (req: Request, res: Response) => {
+  const user = (req as any).user;
   const { id } = req.params;
-  const { numEmpresa, nombre, descripcion, cantidad, unidad, categoria, precio } = req.body;
+  const { nombre, descripcion, cantidad, unidad, categoria, precio } = req.body;
   const file = req.files?.imagen;
 
-  let imagePath = req.body.imagenActual; // mantener imagen anterior si no se sube nueva
+  const numEmpresa = user.rol === 'superadmin' ? req.body.numEmpresa : user.empresa_id;
+  let imagePath = req.body.imagenActual;
 
   if (file && !Array.isArray(file)) {
     const errorValidacion = validarImagen(file as UploadedFile);
     if (errorValidacion) {
       res.status(400).json({ error: errorValidacion });
-      return ;
+      return;
     }
-
     try {
       imagePath = await guardarImagen(file as UploadedFile);
     } catch (err) {
       console.error('Error al guardar la imagen:', err);
-       res.status(500).json({ error: 'Error al guardar la imagen' });
-       return;
+      res.status(500).json({ error: 'Error al guardar la imagen' });
+      return;
     }
   }
 
@@ -120,8 +138,8 @@ router.put('/:id', async (req, res) => {
     );
 
     if (result.affectedRows === 0) {
-       res.status(404).json({ error: 'Producto no encontrado' });
-       return;
+      res.status(404).json({ error: 'Producto no encontrado' });
+      return;
     }
 
     res.json({ message: 'Producto actualizado correctamente' });
@@ -131,19 +149,15 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-//Eliminar un producto
-router.delete('/:id', async (req, res) => {
+// Eliminar un producto
+router.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const [result]: any = await db.query(
-      `DELETE FROM productos WHERE id = ?`,
-      [id]
-    );
-
+    const [result]: any = await db.query('DELETE FROM productos WHERE id = ?', [id]);
     if (result.affectedRows === 0) {
-     res.status(404).json({ error: 'Producto no encontrado' });
-      return ;
+      res.status(404).json({ error: 'Producto no encontrado' });
+      return;
     }
 
     res.json({ message: 'Producto eliminado correctamente' });
