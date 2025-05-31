@@ -13,6 +13,7 @@ import authRouter from './routes/auth';
 import companiesRouter from './routes/companies'
 import userRouter from './routes/user'
 import metricasRouter from './routes/metricas';
+import dashboardRouter from './routes/dashboard';
 const app = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
@@ -35,8 +36,8 @@ app.use('/company', companiesRouter )
 app.use('/user', userRouter )
 app.use('/api/tareas',verifyToken, tareasRoutes)
 app.use('/productos', productosRouter);
-app.use('/metricas', metricasRouter)
-
+//app.use('/metricas', metricasRouter)
+app.use('/dashboard', verifyToken, dashboardRouter);
 // Para comprobar que todo funciona correctamente
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API is running' });
