@@ -27,15 +27,15 @@ app.use(cors({
 }));
 
 //Para subir imagenes
-app.use('/uploads', express.static('uploads')); 
+app.use('/uploads', express.static('uploads'));
 app.use(fileUpload());
 // Endpoints
 app.use('/auth', authRouter);
-app.use('/jornadas',  verifyToken, jornadasRouter); 
-app.use('/company', companiesRouter )
-app.use('/user', userRouter )
-app.use('/api/tareas',verifyToken, tareasRoutes)
-app.use('/productos', verifyToken,productosRouter);
+app.use('/jornadas', verifyToken, jornadasRouter);
+app.use('/company', companiesRouter)
+app.use('/user', userRouter)
+app.use('/api/tareas', verifyToken, tareasRoutes)
+app.use('/productos', verifyToken, productosRouter);
 //app.use('/metricas', metricasRouter)
 app.use('/dashboard', verifyToken, dashboardRouter);
 // Para comprobar que todo funciona correctamente

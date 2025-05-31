@@ -19,7 +19,7 @@ function formatFecha(fechaIso: string): string {
 // Obtener todas las tareas con información del usuario asignado
 router.get('/', async (req: Request, res: Response) => {
   const user = (req as any).user;
-  
+
   try {
     let query = `
   SELECT t.*, u.nombre AS asignadoNombre, e.nombre AS empresa

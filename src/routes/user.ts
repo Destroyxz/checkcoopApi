@@ -15,11 +15,11 @@ interface user {
   empresa_id: number;
   password: string;
   activo: boolean;
-  horaInicio: string;      
-  horaSalida: string;        
-  turnoPartido: boolean;    
-  horaInicio2?: string;      
-  horaSalida2?: string;     
+  horaInicio: string;
+  horaSalida: string;
+  turnoPartido: boolean;
+  horaInicio2?: string;
+  horaSalida2?: string;
 }
 
 interface UserUpdate {
@@ -56,7 +56,7 @@ router.post(
 
     // campos obligatorios
     if (!nombre || !email || !password || !rol || !empresa_id
-        || !horaInicio || !horaSalida) {
+      || !horaInicio || !horaSalida) {
       res.status(400).json({ message: 'Faltan campos obligatorios' });
       return;
     }
@@ -124,11 +124,11 @@ router.post(
         activo,
         horario: {
           inicio1: horaInicio,
-          fin1:   horaSalida,
+          fin1: horaSalida,
 
           ...(turnoPartido && {
             inicio2: horaInicio2,
-            fin2:    horaSalida2
+            fin2: horaSalida2
           })
         }
       });
@@ -349,7 +349,7 @@ router.put<{ id: string }, any, UserUpdate>(
         activo,
         horario: {
           inicio1: horaInicio,
-          fin1:   horaSalida,
+          fin1: horaSalida,
           ...(turnoPartido
             ? { inicio2: horaInicio2, fin2: horaSalida2 }
             : {})

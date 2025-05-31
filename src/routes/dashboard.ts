@@ -73,7 +73,7 @@ router.get('/usuarios/por-dia', async (req, res) => {
 
 
 // GET /usuarios/por-dia/:empresa_id
-router.get('/usuarios/por-dia/:empresa_id', async (req, res:any) => {
+router.get('/usuarios/por-dia/:empresa_id', async (req, res: any) => {
   const empresaId = Number(req.params.empresa_id);
   if (isNaN(empresaId)) {
     return res.status(400).json({ error: 'empresa_id inválido' });
@@ -122,7 +122,7 @@ router.get('/empresas/total', async (req, res) => {
 
 
 // GET /productos/bajo-stock/:empresa_id
-router.get('/productos/bajo-stock/:empresa_id', async (req, res:any) => {
+router.get('/productos/bajo-stock/:empresa_id', async (req, res: any) => {
   const empresaId = Number(req.params.empresa_id);
   if (isNaN(empresaId)) {
     return res.status(400).json({ error: 'empresa_id inválido' });

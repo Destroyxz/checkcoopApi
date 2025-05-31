@@ -283,9 +283,9 @@ router.get('/todas', async (req: Request, res: Response) => {
 
   try {
     const user = (req as any).user;
-const empresaId = user.empresa_id;
-const rol = user.rol; 
-let query = `
+    const empresaId = user.empresa_id;
+    const rol = user.rol;
+    let query = `
   SELECT
   j.id AS jornada_id,
   j.usuario_id,
@@ -302,16 +302,16 @@ JOIN empresas e ON u.empresa_id = e.id
 
 `;
 
-let params: any[] = [];
+    let params: any[] = [];
 
-if (rol !== 'superadmin') {
-  query += ` WHERE u.empresa_id = ?`;
-  params.push(empresaId);
-}
+    if (rol !== 'superadmin') {
+      query += ` WHERE u.empresa_id = ?`;
+      params.push(empresaId);
+    }
 
-query += ` ORDER BY j.fecha DESC`;
+    query += ` ORDER BY j.fecha DESC`;
 
-const [rows] = await db.query<RowDataPacket[]>(query, params);
+    const [rows] = await db.query<RowDataPacket[]>(query, params);
 
 
 
@@ -330,7 +330,7 @@ const [rows] = await db.query<RowDataPacket[]>(query, params);
         id: jornada.jornada_id,
         usuario_id: jornada.usuario_id,
         nombre: jornada.nombre,
-  fecha: new Date(jornada.fecha).toISOString().slice(0, 10),
+        fecha: new Date(jornada.fecha).toISOString().slice(0, 10),
 
         hora_entrada: tramos[0]?.hora_inicio ? new Date(tramos[0].hora_inicio).toISOString() : null,
         hora_salida: tramos[tramos.length - 1]?.hora_fin ? new Date(tramos[tramos.length - 1].hora_fin).toISOString() : null,
@@ -338,10 +338,10 @@ const [rows] = await db.query<RowDataPacket[]>(query, params);
         tipo_jornada: resultado.partida ? 'Partida' : 'Normal',
         estado: resultado.estado,
         empresa: jornada.empresa,
-          totalMinutos: resultado.totalMinutos,
-  minutosEsperados: resultado.minutosEsperados,
-  horasTrabajadas: resultado.horasTrabajadas,
-  llegoTarde: resultado.llegoTarde
+        totalMinutos: resultado.totalMinutos,
+        minutosEsperados: resultado.minutosEsperados,
+        horasTrabajadas: resultado.horasTrabajadas,
+        llegoTarde: resultado.llegoTarde
       });
 
     }
