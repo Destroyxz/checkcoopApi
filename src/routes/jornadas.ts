@@ -279,26 +279,40 @@ router.get('/hoy', async (req: Request, res: Response) => {
 
 // Obtener todas las jornadas con datos del usuario
 router.get('/todas', async (req: Request, res: Response) => {
-  const user = (req as any).user;
-  const empresaId = user.empresa_id;
+
 
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT
-         j.id AS jornada_id,
-         j.usuario_id,
-         j.fecha,
-         u.nombre,
-         u.hora_inicio_1,
-         u.hora_fin_1,
-         u.hora_inicio_2,
-         u.hora_fin_2
-       FROM jornadas j
-       JOIN usuarios u ON j.usuario_id = u.id
-       WHERE u.empresa_id = ?
-       ORDER BY j.fecha DESC`,
-      [empresaId]
-    );
+    const user = (req as any).user;
+const empresaId = user.empresa_id;
+const rol = user.rol; 
+let query = `
+  SELECT
+  j.id AS jornada_id,
+  j.usuario_id,
+  j.fecha,
+  u.nombre,
+  u.hora_inicio_1,
+  u.hora_fin_1,
+  u.hora_inicio_2,
+  u.hora_fin_2,
+  e.nombre AS empresa
+FROM jornadas j
+JOIN usuarios u ON j.usuario_id = u.id
+JOIN empresas e ON u.empresa_id = e.id
+
+`;
+
+let params: any[] = [];
+
+if (rol !== 'superadmin') {
+  query += ` WHERE u.empresa_id = ?`;
+  params.push(empresaId);
+}
+
+query += ` ORDER BY j.fecha DESC`;
+
+const [rows] = await db.query<RowDataPacket[]>(query, params);
+
 
 
     const resultados = [];
@@ -323,6 +337,7 @@ router.get('/todas', async (req: Request, res: Response) => {
 
         tipo_jornada: resultado.partida ? 'Partida' : 'Normal',
         estado: resultado.estado,
+        empresa: jornada.empresa,
           totalMinutos: resultado.totalMinutos,
   minutosEsperados: resultado.minutosEsperados,
   horasTrabajadas: resultado.horasTrabajadas,
