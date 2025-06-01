@@ -38,9 +38,10 @@ app.use('/api/tareas', verifyToken, tareasRoutes)
 app.use('/productos', verifyToken, productosRouter);
 //app.use('/metricas', metricasRouter)
 app.use('/dashboard', verifyToken, dashboardRouter);
+
 // Para comprobar que todo funciona correctamente
 app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'API is running' });
+  res.json({ message: 'Conexión exitosa al servidor' });
 });
 
 // 404 handler (debe ir al final)

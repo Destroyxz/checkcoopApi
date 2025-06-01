@@ -41,13 +41,18 @@ function guardarImagen(file: UploadedFile): Promise<string> {
 router.get('/', async (req: Request, res: Response) => {
   const user = (req as any).user;
   try {
+
     let query = `
-      SELECT p.*, e.nombre AS empresa
+      SELECT 
+        p.*,
+        e.nombre AS empresa
       FROM productos p
-      LEFT JOIN empresas e ON p.numEmpresa = e.id
+      LEFT JOIN empresas e 
+        ON p.numEmpresa = e.id
     `;
     const params: any[] = [];
 
+    // Si el usuario no es superadmin, forzamos filtro por la empresa del usuario
     if (user.rol !== 'superadmin') {
       query += ' WHERE p.numEmpresa = ?';
       params.push(user.empresa_id);

@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 
 // Clave secreta para verificar los tokens JWT. Se toma de las variables de entorno,
 // y si no existe, se usa un valor por defecto
-const JWT_SECRET = process.env.JWT_SECRET || 'UseroNoTieneNiIdeaDeAngular';
+const JWT_SECRET = process.env.JWT_SECRET || 'token_secreto_default';
 
 //Funcion para verificar si el token esta autorizado o no
 function verifyToken(req: Request, res: Response, next: NextFunction): void {
@@ -16,7 +16,7 @@ function verifyToken(req: Request, res: Response, next: NextFunction): void {
 
   //Error que lanza si no recibe bien el token
   if (!authHeader) {
-    res.status(401).json({ message: 'No se recibió token' });
+    res.status(401).json({ message: 'parámetro de entrada inválida' });
     return;
   }
 
