@@ -32,8 +32,8 @@ app.use(fileUpload());
 // Endpoints
 app.use('/auth', authRouter);
 app.use('/jornadas', verifyToken, jornadasRouter);
-app.use('/company', companiesRouter)
-app.use('/user', userRouter)
+app.use('/company', verifyToken, companiesRouter)
+app.use('/user', verifyToken, userRouter)
 app.use('/api/tareas', verifyToken, tareasRoutes)
 app.use('/productos', verifyToken, productosRouter);
 //app.use('/metricas', metricasRouter)

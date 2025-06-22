@@ -43,6 +43,36 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
+// Obtener tareas filtradas por empresa_id
+router.get('/empresa/:empresa_id', async (req: any, res: any) => {
+  const user = (req as any).user;
+  const { empresa_id } = req.params;
+
+  // Si no es superadmin y trata de acceder a otra empresa, devolvemos 403
+  if (user.rol !== 'superadmin' && Number(empresa_id) !== user.empresa_id) {
+    return res.status(403).json({ error: 'Acceso denegado a esta empresa' });
+  }
+
+  try {
+    const query = `
+      SELECT t.*, 
+             u.nombre AS asignadoNombre, 
+             e.nombre AS empresa
+      FROM tareas t
+      LEFT JOIN usuarios u ON t.usuario_id = u.id
+      LEFT JOIN empresas e ON t.empresa_id = e.id
+      WHERE t.empresa_id = ?
+    `;
+    const params = [empresa_id];
+
+    const [rows] = await db.query<RowDataPacket[]>(query, params);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error al obtener tareas por empresa:', err);
+    res.status(500).json({ error: 'Error al obtener tareas por empresa' });
+  }
+});
+
 // Crear nueva tarea
 router.post('/', async (req: Request, res: Response) => {
   const user = (req as any).user;
